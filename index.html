@@ -1,0 +1,2201 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Prompt 快速查詢工具 Pro</title>
+<style>
+  :root{
+    --bg:#f6f5f1; --paper:#ffffff; --ink:#1c1f24; --muted:#6b7280; --line:#e4e0d6;
+    --accent:#146b5a; --accent-soft:#e6f1ed; --warn:#a34b23; --code:#161c1a; --code-ink:#eef6f1;
+    --b1:#3b82f6; --b1bg:#e8f0fe; --b2:#a855f7; --b2bg:#f3e9fd; --b3:#a34b23; --b3bg:#f5e7df;
+    --star:#e0a106; --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;line-height:1.55}
+  a{color:var(--accent)}
+  header{padding:24px 24px 14px;background:var(--paper);border-bottom:1px solid var(--line)}
+  .title-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  h1{margin:0;font-size:clamp(24px,3.4vw,36px);line-height:1.1}
+  .badge-pro{font-size:12px;font-weight:800;color:#fff;background:var(--accent);
+    padding:2px 9px;border-radius:999px;letter-spacing:.5px}
+  .subtitle{margin:8px 0 0;max-width:880px;color:var(--muted);font-size:15px}
+  .toolbar{position:sticky;top:0;z-index:20;display:grid;
+    grid-template-columns:minmax(200px,1fr) auto 124px 124px auto;gap:10px;align-items:center;
+    padding:12px 24px;background:rgba(246,245,241,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+  input,select{min-height:44px;width:100%;border:1px solid var(--line);border-radius:8px;
+    padding:0 12px;background:var(--paper);color:var(--ink);font:inherit}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+  .kbd{font-size:12px;color:var(--muted);white-space:nowrap}
+  .kbd b{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;
+    padding:0 6px;background:#fff;color:var(--ink);font-size:11px}
+  button{touch-action:manipulation;-webkit-tap-highlight-color:rgba(20,107,90,.16)}
+  .clearbtn{min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);font:inherit;font-weight:600;cursor:pointer;padding:0 16px;white-space:nowrap}
+  .clearbtn:hover{background:#f3f0e8;border-color:var(--accent);color:var(--accent)}
+  main{display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px;padding:18px 24px 40px}
+  nav{align-self:start;position:sticky;top:80px}
+  .nav-box{border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);overflow:hidden}
+  nav button{width:100%;display:flex;justify-content:space-between;gap:10px;border:0;
+    border-bottom:1px solid var(--line);padding:11px 14px;background:transparent;color:var(--ink);
+    text-align:left;font:inherit;cursor:pointer}
+  nav button:last-child{border-bottom:0}
+  nav button:hover{background:#faf9f6}
+  nav button.active{background:var(--accent-soft);color:var(--accent);font-weight:700;
+    box-shadow:inset 3px 0 0 var(--accent)}
+  nav .c{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+  nav button.active .c{color:var(--accent)}
+  .fav-btn{margin-bottom:10px}
+  .fav-btn button{display:flex;align-items:center;justify-content:space-between;width:100%;
+    border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);padding:11px 14px;
+    font:inherit;cursor:pointer;color:var(--ink)}
+  .fav-btn button.active{background:#fff7e6;border-color:var(--star);color:#8a6a00;font-weight:700}
+  .stats{margin:0 0 14px;color:var(--muted);font-size:14px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .lvkey{display:inline-flex;align-items:center;gap:5px}
+  .dot{width:9px;height:9px;border-radius:50%}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px}
+  article{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;background:var(--paper);transition:box-shadow .18s,transform .18s,border-color .18s}
+  article:hover{box-shadow:0 8px 24px rgba(20,30,25,.08);transform:translateY(-2px);border-color:#d8d2c4}
+  .meta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+  .tag{display:inline-flex;align-items:center;min-height:24px;padding:0 9px;border-radius:999px;
+    background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700}
+  .level{font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px}
+  .lv-基礎{background:var(--b1bg);color:var(--b1)}
+  .lv-進階{background:var(--b2bg);color:var(--b2)}
+  .lv-專業{background:var(--b3bg);color:var(--b3)}
+  .model{font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;border:1px solid;cursor:help}
+  .m-Claude{color:#b8552e;border-color:#e7c4b0;background:#fbeee6}
+  .m-ChatGPT{color:#0d8c6d;border-color:#bfe6da;background:#e7f6f1}
+  .m-Gemini{color:#2f6ef0;border-color:#c4d6fb;background:#eaf1fe}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .tab{min-height:42px;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 16px;font:inherit;font-weight:700;cursor:pointer;color:var(--muted)}
+  .tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  #toolsView{padding:18px 24px 44px;max-width:1080px}
+  #toolsView h2{font-size:20px;margin:26px 0 10px}
+  #toolsView h2:first-of-type{margin-top:6px}
+  #toolsView p{color:var(--ink);max-width:840px;margin:8px 0}
+  .twrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--paper);margin:10px 0}
+  table.t{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+  table.t th,table.t td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.t th{background:#faf9f6;font-weight:700}
+  table.t tr:last-child td{border-bottom:0}
+  .note{background:#fff7e6;border:1px solid #f0d98c;border-radius:8px;padding:10px 12px;font-size:13px;color:#7a5b00;margin:12px 0}
+  #glossView{padding:18px 24px 44px;max-width:1080px}
+  #glossView #glossSearch{margin-bottom:14px;max-width:520px}
+  .gloss-term{font-size:21px;font-weight:800}
+  .gloss-full{color:var(--muted);font-size:13px;margin-left:8px}
+  .gloss-one{background:var(--accent-soft);border-left:3px solid var(--accent);padding:9px 11px;border-radius:6px;margin:10px 0;font-weight:600;font-size:14px}
+  .facet{display:flex;gap:8px;margin:6px 0;font-size:13.5px;line-height:1.55}
+  .facet .fl{flex:0 0 auto;font-size:11px;font-weight:800;color:#fff;background:var(--accent);border-radius:5px;padding:2px 7px;height:fit-content;white-space:nowrap}
+  article h2{cursor:pointer;display:flex;align-items:center;gap:6px}
+  article h2 .chev{margin-left:auto;color:var(--muted);font-size:12px;transition:.15s;flex:0 0 auto}
+  article.open h2 .chev{transform:rotate(180deg)}
+  .workbench-intro{margin:0 0 12px;padding:13px 15px;border:1px solid var(--line);border-radius:var(--radius);background:#fff}
+  .workbench-intro b{display:block;margin-bottom:3px;font-size:15px}
+  .workbench-intro span{display:block;color:var(--muted);font-size:13px}
+  .taskbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+  .taskbar button{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;font-size:14px}
+  .taskbar button:hover{border-color:var(--accent);color:var(--accent)}
+  .taskbar button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .gsec{grid-column:1/-1;font-size:13px;font-weight:800;color:var(--accent);margin:4px 0 -6px}
+  .qbar{display:none;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center}
+  .qbar.show{display:flex}
+  .qbar .qlabel{font-size:12px;font-weight:800;color:#b8552e}
+  .qbar .qchip{border:1px solid #e7c4b0;background:#fbeee6;color:#b8552e;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer}
+  .qbar .qchip:hover{filter:brightness(.96)}
+  .pack-panel,.versions-panel{margin:0 0 14px}
+  .pack-title,.versions-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
+  .pack-title b,.versions-title b{font-size:15px}
+  .pack-title span,.versions-title span{color:var(--muted);font-size:12px}
+  .pack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
+  .pack{border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);padding:13px}
+  .pack h3{margin:0 0 4px;font-size:16px}
+  .pack p{margin:0 0 10px;color:var(--muted);font-size:13px}
+  .steps{display:flex;flex-direction:column;gap:6px}
+  .step{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:7px 8px;font-size:13px}
+  .step .n{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:11px}
+  .step button,.version button{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:5px 9px;font:inherit;font-weight:700;font-size:12px;cursor:pointer;color:var(--ink)}
+  .step button:hover,.version button:hover{border-color:var(--accent);color:var(--accent)}
+  .versions-list{display:flex;flex-wrap:wrap;gap:8px}
+  .version{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;background:var(--paper);padding:6px 8px 6px 12px;font-size:13px}
+  .version span{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card-note{display:flex;gap:8px;margin:0 0 10px;color:var(--muted);font-size:13px}
+  .card-note b{color:var(--ink)}
+  article.focused{outline:3px solid var(--accent-soft);border-color:var(--accent)}
+  article .pbody{display:none}
+  article.open .pbody{display:block}
+  .star{margin-left:auto;border:0;background:transparent;cursor:pointer;font-size:20px;
+    line-height:1;color:#cfcabb;padding:2px}
+  .star.on{color:var(--star)}
+  h2{margin:0 0 6px;font-size:18px;line-height:1.3}
+  .desc{margin:0 0 11px;color:var(--muted);font-size:14px}
+  mark{background:#fff1a8;color:inherit;border-radius:3px;padding:0 1px}
+  pre{margin:0;flex:1;min-height:120px;max-height:300px;overflow:auto;white-space:pre-wrap;
+    word-break:break-word;border-radius:8px;padding:12px;background:var(--code);color:var(--code-ink);
+    font-family:Consolas,"Cascadia Code",monospace;font-size:13px;line-height:1.65}
+  pre .ph{color:#ffd479;font-weight:700}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  button.act{min-height:38px;border:1px solid var(--accent);border-radius:8px;padding:0 13px;
+    background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+  button.act:hover{filter:brightness(1.06)}
+  button.ghost{background:var(--paper);color:var(--ink);border-color:var(--line)}
+  button.ghost:hover{background:#f7f6f2}
+  .fill-area{margin-top:11px;border:1px dashed var(--line);border-radius:8px;padding:11px;
+    background:var(--bg);display:none}
+  .fill-area.open{display:block}
+  .fill-area label{display:block;font-size:12px;font-weight:700;color:var(--accent);margin:0 0 3px}
+  .fill-area .fld{margin-bottom:9px}
+  .fill-area textarea{width:100%;min-height:38px;border:1px solid var(--line);border-radius:6px;
+    padding:7px 9px;font:inherit;font-size:13px;resize:vertical;background:var(--paper)}
+  .fill-area textarea.prefilled{background:#fffbe8;border-color:#e8d48a}
+  .fill-area .hint{font-size:12px;color:var(--muted);margin:0 0 9px}
+  .empty{display:none;padding:40px;border:1px dashed var(--line);border-radius:var(--radius);
+    background:var(--paper);color:var(--muted);text-align:center}
+  footer{padding:0 24px 32px;color:var(--muted);font-size:13px;max-width:920px}
+  footer b{color:var(--ink)}
+  footer code{background:#ece8de;padding:1px 6px;border-radius:4px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;font-weight:600;
+    opacity:0;pointer-events:none;transition:.22s;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .data-panel{position:fixed;inset:24px;z-index:80;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:0 18px 50px rgba(20,30,25,.22);display:none;flex-direction:column;max-width:860px;margin:auto}
+  .data-panel.show{display:flex}
+  .data-panel header{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .data-panel header b{font-size:16px}
+  .data-panel header span{color:var(--muted);font-size:13px}
+  .data-panel textarea{flex:1;min-height:260px;margin:14px 16px;border:1px solid var(--line);border-radius:8px;padding:12px;
+    font-family:Consolas,"Cascadia Code",monospace;font-size:12px;background:var(--bg);color:var(--ink);resize:none}
+  .data-actions{display:flex;gap:8px;justify-content:flex-end;padding:0 16px 16px;flex-wrap:wrap}
+  body.dark{--bg:#121418;--paper:#1a1d24;--ink:#e8eaee;--muted:#9aa3b0;--line:#2a3039;--accent:#2fbf9b;--accent-soft:rgba(47,191,155,.14);--code:#0d1110;--code-ink:#d9efe6}
+  body.dark .toolbar{background:rgba(18,20,24,.92)}
+  body.dark nav button:hover{background:rgba(255,255,255,.04)}
+  body.dark .lv-基礎{background:rgba(59,130,246,.16)}
+  body.dark .lv-進階{background:rgba(168,85,247,.16)}
+  body.dark .lv-專業{background:rgba(199,108,62,.18);color:#e8a37a}
+  body.dark .m-Claude{background:rgba(184,85,46,.16);border-color:rgba(231,196,176,.3)}
+  body.dark .m-ChatGPT{background:rgba(13,140,109,.16);border-color:rgba(191,230,218,.25)}
+  body.dark .m-Gemini{background:rgba(47,110,240,.18);border-color:rgba(196,214,251,.25)}
+  body.dark mark{background:rgba(255,213,80,.32);color:#fff}
+  body.dark .kbd b{background:#222630;color:var(--ink)}
+  body.dark .qbar .qchip{background:rgba(184,85,46,.16);border-color:rgba(231,196,176,.35);color:#e8a37a}
+  body.dark .qbar .qlabel{color:#e8a37a}
+  body.dark .step{background:#151820}
+  body.dark .note{background:rgba(245,158,11,.1);border-color:rgba(240,217,140,.3);color:#e7c46a}
+  body.dark .fill-area textarea.prefilled{background:rgba(251,191,36,.08);border-color:rgba(232,212,138,.4)}
+  body.dark table.t th{background:rgba(255,255,255,.03)}
+  body.dark button.ghost:hover{background:rgba(255,255,255,.05)}
+  body.dark .clearbtn:hover{background:rgba(255,255,255,.05)}
+  body.dark article:hover{border-color:#3a414d}
+  @media(max-width:880px){
+    .toolbar{grid-template-columns:1fr 1fr}.kbd{display:none}
+    main{grid-template-columns:1fr}nav{position:static}
+    .grid{grid-template-columns:1fr}
+    header,.toolbar,main,footer{padding-left:16px;padding-right:16px}
+  }
+  @media(max-width:640px){
+    header{padding-top:18px}
+    h1{font-size:24px}
+    .subtitle{font-size:13px}
+    .tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+    .tab{flex:0 0 auto;width:auto;border-radius:8px;text-align:left;white-space:nowrap;padding-left:12px;padding-right:12px}
+    .toolbar{position:static;grid-template-columns:1fr;gap:8px;padding-top:10px;padding-bottom:10px}
+    .nav-box{display:flex;flex-wrap:wrap;gap:8px;border:0;background:transparent}
+    nav button{flex:1 1 150px;width:auto;min-width:0;justify-content:space-between;min-height:44px;border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:9px 13px}
+    nav button.active{box-shadow:none;background:var(--accent);border-color:var(--accent);color:#fff}
+    nav button.active .c{color:#fff}
+    .fav-btn button,.taskbar button,.step button,.version button,button.act,.clearbtn{min-height:44px}
+    article{padding:15px}
+    article h2{min-height:44px;align-items:center}
+    .actions{display:grid;grid-template-columns:1fr}
+    button.act{width:100%}
+    .data-panel{inset:10px}
+    .data-actions{display:grid;grid-template-columns:1fr}
+  }
+  @media(max-width:420px){
+    .grid{gap:12px}
+    .version{width:100%;border-radius:10px;justify-content:space-between}
+    .version span{max-width:180px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="title-row">
+    <h1>AI Prompt 快速查詢工具</h1>
+    <span class="badge-pro">PRO</span>
+  </div>
+  <p class="subtitle">每個分類<b>精選</b>最實用的提示詞（不是收集全部）· 變數填空直接生成 · 標好建議模型 · 一鍵收藏 · 離線可用。</p>
+  <div class="tabs">
+    <button id="tabPrompts" class="tab active" type="button">📚 Prompt 庫</button>
+    <button id="tabTools" class="tab" type="button">🧰 AI 工具搭配</button>
+    <button id="tabGloss" class="tab" type="button">📖 AI 名詞速查</button>
+    <button id="exportData" class="tab" type="button" title="匯出收藏、最近使用、我的版本">匯出資料</button>
+    <button id="importData" class="tab" type="button" title="匯入另一台電腦的個人資料">匯入資料</button>
+    <input id="importFile" type="file" accept="application/json,.json" style="display:none">
+    <button id="themeToggle" class="tab" type="button" title="深淺色切換">🌙</button>
+  </div>
+</header>
+
+<section class="toolbar">
+  <input id="search" type="search" enterkeyhint="search" placeholder="搜尋：策略、SOP、API、SQL、視覺、圖片、風險、改寫…">
+  <button id="searchBtn" class="clearbtn" type="button">搜尋</button>
+  <select id="level">
+    <option value="all">全部難度</option>
+    <option value="基礎">基礎</option>
+    <option value="進階">進階</option>
+    <option value="專業">專業</option>
+  </select>
+  <select id="model" title="依建議模型篩選">
+    <option value="all">全部模型</option>
+    <option value="Claude">建議 Claude</option>
+    <option value="ChatGPT">建議 ChatGPT</option>
+    <option value="Gemini">建議 Gemini</option>
+  </select>
+  <button id="clearAll" class="clearbtn" type="button" title="清除搜尋、難度、模型、分類篩選">清除全部</button>
+</section>
+
+<main>
+  <nav aria-label="分類">
+    <div class="fav-btn"><button id="favToggle" type="button"><span>★ 我的收藏</span><span class="c" id="favCount">0</span></button></div>
+    <div class="fav-btn"><button id="recToggle" type="button"><span>🕒 最近使用</span><span class="c" id="recCount">0</span></button></div>
+    <div class="nav-box" id="categories"></div>
+  </nav>
+  <section>
+    <div class="workbench-intro">
+      <b>先選任務，不要先翻資料庫。</b>
+      <span>點下面入口會直接篩出可用 prompt；第二次回來先看常用與最近使用，少找一次。</span>
+    </div>
+    <div class="taskbar" id="taskbar"></div>
+    <div class="qbar" id="qbar"></div>
+    <section class="pack-panel" id="packPanel"></section>
+    <section class="versions-panel" id="versionsPanel"></section>
+    <p class="stats" id="stats">共 248 筆，先顯示常用 36 筆</p>
+    <div class="grid" id="cards">
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">通用・提示技巧</span><span class="level lv-基礎">基礎</span></div>
+      <h2>萬用任務提示<span class="chev">▾</span></h2>
+      <p class="desc">任何任務都能用，先把 AI 拉回可控範圍。</p>
+      <pre class="pbody">你現在是[角色]。
+目標：[我要完成什麼]
+背景：[必要背景]
+素材：[貼上內容或資料]
+限制：[不能做什麼 / 必須遵守什麼]
+輸出格式：[條列 / 表格 / JSON / Markdown]
+請先給結論，再給理由。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">通用・提示技巧</span><span class="level lv-進階">進階</span></div>
+      <h2>需求整理成規格<span class="chev">▾</span></h2>
+      <p class="desc">把混亂需求整理成可以開工的文件。</p>
+      <pre class="pbody">請把以下需求整理成可執行規格。
+需求：[貼上內容]
+請輸出：
+1. 目標
+2. 使用者情境
+3. 必要功能
+4. 暫不做功能
+5. 資料需求
+6. 權限規則
+7. 驗收標準
+8. 風險與未確認問題</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">通用・提示技巧</span><span class="level lv-專業">專業</span></div>
+      <h2>高精度任務拆解<span class="chev">▾</span></h2>
+      <p class="desc">複雜任務，要求 AI 先拆問題再輸出。</p>
+      <pre class="pbody">你是資深問題拆解顧問。
+任務：[任務]
+背景：[背景]
+已知限制：[限制]
+請先做問題拆解：
+1. 這個任務真正要解決的問題
+2. 需要哪些輸入
+3. 哪些假設可能錯
+4. 最小可行做法
+5. 完整做法
+6. 風險
+最後再給可執行步驟。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">商業・策略</span><span class="level lv-進階">進階</span></div>
+      <h2>功能取捨<span class="chev">▾</span></h2>
+      <p class="desc">判斷功能該做、不做、延後。</p>
+      <pre class="pbody">你是務實的產品負責人。
+請評估功能：[功能名稱]
+產品背景：[背景]
+使用者：[使用者]
+請用以下標準判斷：
+- 是否解決現在的真問題
+- 開發成本
+- 維護成本
+- 3 個月內是否用得到
+- 是否有免費或簡化替代方案
+最後輸出：做 / 不做 / 延後，並說明原因。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">商業・策略</span><span class="level lv-專業">專業</span></div>
+      <h2>商業模式壓力測試<span class="chev">▾</span></h2>
+      <p class="desc">檢查產品是不是只好看但不賺錢。</p>
+      <pre class="pbody">請壓力測試這個商業模式。
+產品：[產品]
+客群：[客群]
+收費方式：[收費]
+成本結構：[成本]
+目前資源：[資源]
+請輸出：
+1. 最脆弱的假設
+2. 最可能失敗的原因
+3. 需要驗證的 5 個問題
+4. 低成本驗證方法
+5. 如果驗證失敗，如何縮小範圍
+6. 最終建議</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">商業・策略</span><span class="level lv-專業">專業</span></div>
+      <h2>決策備忘錄<span class="chev">▾</span></h2>
+      <p class="desc">適合重大技術或商業選擇。</p>
+      <pre class="pbody">請寫一份決策備忘錄。
+決策題目：[題目]
+候選方案：[A/B/C]
+背景：[背景]
+限制：[限制]
+請輸出：
+結論先行：建議選項、不選其他方案的原因
+再輸出：
+1. 評估標準
+2. 成本
+3. 風險
+4. 短期影響
+5. 長期維護
+6. 可逆性
+7. 下一步</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">商業・策略</span><span class="level lv-專業">專業</span></div>
+      <h2>MVP 切版<span class="chev">▾</span></h2>
+      <p class="desc">把過大的需求切成第一版能活的範圍。</p>
+      <pre class="pbody">請把這個產品需求切成 MVP。
+需求：[貼上需求]
+目標用戶：[用戶]
+商業目標：[目標]
+請輸出：
+1. 第一版只做什麼
+2. 明確不做什麼
+3. 為什麼不做
+4. 必要資料表或欄位
+5. 第一版驗收標準
+6. 上線後看哪些指標
+7. 第二版才考慮的功能</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">文字・內容</span><span class="level lv-基礎">基礎</span></div>
+      <h2>社群貼文<span class="chev">▾</span></h2>
+      <p class="desc">快速產出可發布版本。</p>
+      <pre class="pbody">請幫我寫一篇社群貼文。
+主題：[主題]
+目標受眾：[誰會看]
+語氣：[直接 / 溫暖 / 專業 / 幽默]
+重點：[3-5 個重點]
+限制：[字數、禁用詞、平台]
+請提供 3 個版本：短版、中版、強 CTA 版。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">文字・內容</span><span class="level lv-進階">進階</span></div>
+      <h2>銷售頁文案<span class="chev">▾</span></h2>
+      <p class="desc">商品頁、服務頁、活動頁適用。</p>
+      <pre class="pbody">你是轉換率文案顧問。
+產品：[產品]
+受眾：[受眾]
+痛點：[痛點]
+特色：[特色]
+證據：[案例、數據、評價]
+請產出：
+1. 主標題 5 個
+2. 副標題 5 個
+3. 痛點段落
+4. 解決方案段落
+5. FAQ 5 題
+6. CTA 5 個</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">文字・內容</span><span class="level lv-專業">專業</span></div>
+      <h2>品牌語氣系統<span class="chev">▾</span></h2>
+      <p class="desc">建立長期一致的文案口吻。</p>
+      <pre class="pbody">請建立品牌語氣系統。
+品牌：[品牌]
+受眾：[受眾]
+產品：[產品]
+不想像：[討厭的語氣或品牌]
+想接近：[參考語氣]
+請輸出：
+1. 品牌個性
+2. 說話原則
+3. 禁用語氣
+4. 常用詞
+5. 避免詞
+6. 社群貼文範例
+7. 客服回覆範例
+8. 銷售頁範例</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">文字・內容</span><span class="level lv-專業">專業</span></div>
+      <h2>反模板改寫<span class="chev">▾</span></h2>
+      <p class="desc">刪掉 AI 味、套版感、假溫馨。</p>
+      <pre class="pbody">請把以下文字改到不像 AI 寫的。
+文字：[貼上內容]
+要求：
+- 刪掉空泛形容詞
+- 刪掉假溫馨
+- 刪掉過度完整的模板句
+- 保留真實口氣
+- 不要新增不存在的資訊
+請輸出：
+1. 改寫版
+2. 刪掉哪些 AI 味
+3. 哪些句子保留原樣，為什麼</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">設計・影音</span><span class="level lv-進階">進階</span></div>
+      <h2>設計直覺評估<span class="chev">▾</span></h2>
+      <p class="desc">先感覺，再分析。</p>
+      <pre class="pbody">請用直覺優先的方式評估這個設計。
+設計內容：[貼圖或描述]
+請依序輸出：
+1. 第一眼直覺反應
+2. 情緒感受
+3. 空氣感與生命感
+4. 可能聯想
+5. 設計原因回推
+6. 具體修改建議
+不要先講排版理論。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">設計・影音</span><span class="level lv-專業">專業</span></div>
+      <h2>視覺語意誤判檢查<span class="chev">▾</span></h2>
+      <p class="desc">檢查畫面是否傳出錯誤情緒。</p>
+      <pre class="pbody">請檢查這張視覺是否有語意誤判。
+作品：[貼圖或描述]
+原本目的：[想傳達什麼]
+請依序輸出：
+1. 第一眼像什麼
+2. 情緒像什麼
+3. 哪些元素造成誤判
+4. 色彩語意
+5. 構圖語意
+6. 人物或物件姿態語意
+7. 如何改到更接近原目的</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">設計・影音</span><span class="level lv-專業">專業</span></div>
+      <h2>版面空氣感修正<span class="chev">▾</span></h2>
+      <p class="desc">讓畫面有呼吸，不是堆滿元素。</p>
+      <pre class="pbody">請評估這個版面的空氣感。
+畫面描述：[描述]
+使用場景：[場景]
+請輸出：
+1. 哪裡太擠
+2. 哪裡太空
+3. 視線流動是否順
+4. 主次是否清楚
+5. 哪些元素可以刪
+6. 字級與間距修正建議
+7. 修改後的版面配置文字稿</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">設計・影音</span><span class="level lv-專業">專業</span></div>
+      <h2>空間錯視 Prompt<span class="chev">▾</span></h2>
+      <p class="desc">不是炸裂特效，是讓人眼覺得空間怪。</p>
+      <pre class="pbody">Analyze the original photo&#039;s spatial structure first.
+Identify compositional flow, illusion anchor, and possible depth reassignment.
+Create a subtle spatial contradiction using local spatial displacement and depth-plane inconsistency.
+Keep the subject believable.
+Avoid generic breakout, giant hands, giant feet, fisheye, picture frame, superhero pose, surreal redesign, liquid melting, and AI fantasy environment.
+Add only minimal cinematic enhancement.
+Goal: viewer feels the space is slightly wrong, not that the effect is explosive.</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">設計・影音</span><span class="level lv-專業">專業</span></div>
+      <h2>照片空間解析<span class="chev">▾</span></h2>
+      <p class="desc">生成前先拆原圖，不套模板。</p>
+      <pre class="pbody">Please analyze this photo before generating any edit.
+Output:
+1. Original spatial structure
+2. Main perspective direction
+3. Compositional flow
+4. Existing depth planes
+5. Possible illusion anchor
+6. Best local depth reassignment
+7. What must not be changed
+8. One subtle spatial contradiction idea
+Do not propose generic breakout effects.</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">設計・影音</span><span class="level lv-專業">專業</span></div>
+      <h2>局部深度重分配<span class="chev">▾</span></h2>
+      <p class="desc">只改局部空間，不破壞照片可信度。</p>
+      <pre class="pbody">Create a subtle local depth reassignment.
+Source image context: [describe image]
+Keep identity, lighting direction, lens feeling, and original environment.
+Use a small spatial offset along the original compositional flow.
+Create depth-plane inconsistency only around [anchor object].
+Avoid dramatic fantasy, fisheye, broken frame, giant limbs, and explosive effects.
+The final image should feel photographically plausible but spatially uneasy.</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">開發・技術</span><span class="level lv-基礎">基礎</span></div>
+      <h2>Bug 分析<span class="chev">▾</span></h2>
+      <p class="desc">貼錯誤訊息與程式碼，找最小修正。</p>
+      <pre class="pbody">你是資深 Node.js 工程師。
+錯誤訊息：[貼上錯誤]
+相關程式碼：[貼上程式]
+預期行為：[應該怎樣]
+實際行為：[現在怎樣]
+請輸出：
+1. 最可能原因
+2. 如何驗證
+3. 最小修正方案
+4. 可能副作用</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">開發・技術</span><span class="level lv-進階">進階</span></div>
+      <h2>API 規格設計<span class="chev">▾</span></h2>
+      <p class="desc">Node.js + PostgreSQL，不用 ORM。</p>
+      <pre class="pbody">請設計 Node.js + PostgreSQL API 規格。
+功能：[功能]
+資料表：[資料結構或欄位]
+權限：[誰可以操作]
+請輸出：
+- Endpoint
+- Method
+- Request body
+- Response JSON
+- Status code
+- SQL 查詢重點
+- 必要驗證
+不要使用 ORM。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">開發・技術</span><span class="level lv-專業">專業</span></div>
+      <h2>資料庫 Schema Review<span class="chev">▾</span></h2>
+      <p class="desc">檢查 PostgreSQL 表設計能不能撐 3-5 年。</p>
+      <pre class="pbody">你是 PostgreSQL 架構審查員。
+Schema：[貼上 schema]
+產品需求：[需求]
+請檢查：
+1. 欄位命名是否一致
+2. 型別是否合理
+3. 主鍵與外鍵
+4. 索引是否足夠
+5. 查詢會不會慢
+6. 是否過度設計
+7. 缺少哪些約束
+8. migration 風險
+請給最小修改 SQL。不要建議 ORM。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">開發・技術</span><span class="level lv-專業">專業</span></div>
+      <h2>安全審查<span class="chev">▾</span></h2>
+      <p class="desc">檢查 Express 專案基本安全。</p>
+      <pre class="pbody">你是 Node.js 安全審查員。
+程式碼：[貼上程式碼]
+環境：[部署環境]
+請檢查：
+1. .env 是否正確使用
+2. SESSION_SECRET 是否硬編碼
+3. helmet
+4. rate-limit
+5. SQL injection
+6. XSS
+7. CSRF 或 session 風險
+8. 權限檢查漏洞
+請輸出問題、嚴重度、修正方式。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">開發・技術</span><span class="level lv-專業">專業</span></div>
+      <h2>PR Code Review<span class="chev">▾</span></h2>
+      <p class="desc">用 code review 角度抓 bug，不是稱讚。</p>
+      <pre class="pbody">請用 code review 角度審查以下變更。
+變更內容：[貼上 diff 或程式]
+請優先找：
+1. bug
+2. 行為回歸
+3. 安全風險
+4. 缺少測試
+5. 維護成本
+6. 邊界案例
+輸出格式：[P0/P1/P2] 問題標題、檔案與行號、為什麼是問題、建議修法。
+沒有問題就明確說沒有。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">開發・技術</span><span class="level lv-專業">專業</span></div>
+      <h2>SQL 查詢優化<span class="chev">▾</span></h2>
+      <p class="desc">針對慢查詢找索引與改寫方式。</p>
+      <pre class="pbody">你是 PostgreSQL 效能顧問。
+慢查詢：[貼上 SQL]
+資料量：[資料量]
+表結構：[schema]
+目前索引：[indexes]
+請輸出：
+1. 慢的可能原因
+2. 建議 EXPLAIN ANALYZE 看什麼
+3. SQL 改寫
+4. 索引建議
+5. 不建議加的索引
+6. 寫入成本影響</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">數據・文書</span><span class="level lv-基礎">基礎</span></div>
+      <h2>資料摘要<span class="chev">▾</span></h2>
+      <p class="desc">把資料變結論。</p>
+      <pre class="pbody">請分析以下資料。
+資料：[貼上資料]
+請輸出：
+1. 3 個最重要結論
+2. 異常或矛盾處
+3. 可能原因
+4. 下一步建議
+5. 需要補充的資料</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">數據・文書</span><span class="level lv-進階">進階</span></div>
+      <h2>方案比較表<span class="chev">▾</span></h2>
+      <p class="desc">多方案做決策。</p>
+      <pre class="pbody">請比較以下方案：[方案 A / B / C]
+評估標準：[成本、時間、風險、維護、成效]
+請輸出表格，欄位包含：方案、優點、缺點、成本、風險、適合情境、最終建議。
+結論放最前面。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">數據・文書</span><span class="level lv-專業">專業</span></div>
+      <h2>指標異常診斷<span class="chev">▾</span></h2>
+      <p class="desc">找營運數據為什麼變差。</p>
+      <pre class="pbody">請診斷這個指標異常。
+指標：[指標名稱]
+時間範圍：[時間]
+變化：[上升/下降多少]
+相關資料：[貼上資料]
+請輸出：
+1. 最可能原因排序
+2. 需要切分的維度
+3. 可能是假警報的原因
+4. 要查的 SQL 或資料欄位
+5. 下一步驗證順序
+6. 暫時不要做的錯誤決策</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">數據・文書</span><span class="level lv-專業">專業</span></div>
+      <h2>資料品質檢查<span class="chev">▾</span></h2>
+      <p class="desc">檢查資料能不能拿來做決策。</p>
+      <pre class="pbody">請檢查這批資料品質。
+資料：[貼上資料或欄位描述]
+用途：[要拿來做什麼決策]
+請輸出：
+1. 缺值問題
+2. 重複問題
+3. 定義不一致
+4. 時間範圍偏差
+5. 樣本偏差
+6. 不能直接下結論的地方
+7. 清理規則建議
+8. 可用與不可用結論</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">流程・營運</span><span class="level lv-進階">進階</span></div>
+      <h2>SOP 產生器<span class="chev">▾</span></h2>
+      <p class="desc">把工作流程整理成標準作業。</p>
+      <pre class="pbody">請把以下流程整理成 SOP。
+流程描述：[貼上內容]
+角色：[誰執行]
+工具：[使用工具]
+請輸出：
+1. 目的
+2. 適用範圍
+3. 前置條件
+4. 步驟
+5. 檢查點
+6. 常見錯誤
+7. 完成標準</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">流程・營運</span><span class="level lv-專業">專業</span></div>
+      <h2>AI 自動化流程設計<span class="chev">▾</span></h2>
+      <p class="desc">設計 AI 協作流程，不先寫程式。</p>
+      <pre class="pbody">請設計一個 AI 輔助工作流。
+任務：[任務]
+目前流程：[流程]
+輸入資料：[資料]
+輸出成果：[成果]
+限制：[成本、工具、權限]
+請輸出：
+1. 哪些步驟適合 AI
+2. 哪些步驟必須人工確認
+3. Prompt 節點設計
+4. 資料格式
+5. 品質檢查規則
+6. 失敗回退流程
+7. 第一版最小落地方案</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">流程・營運</span><span class="level lv-專業">專業</span></div>
+      <h2>營運例外處理<span class="chev">▾</span></h2>
+      <p class="desc">處理不是正常流程的狀況。</p>
+      <pre class="pbody">請設計例外處理流程。
+正常流程：[流程]
+例外狀況：[狀況]
+影響對象：[對象]
+請輸出：
+1. 例外分類
+2. 判斷條件
+3. 第一線處理方式
+4. 需要升級的條件
+5. 記錄哪些資料
+6. 對客戶怎麼說
+7. 後續如何防止重複發生</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">學習・思考</span><span class="level lv-基礎">基礎</span></div>
+      <h2>文章重點整理<span class="chev">▾</span></h2>
+      <p class="desc">長文變筆記。</p>
+      <pre class="pbody">請整理以下文章。
+文章：[貼上內容]
+請輸出：
+1. 一句話總結
+2. 核心觀點 5 點
+3. 重要名詞解釋
+4. 可行動建議
+5. 我應該記住什麼</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">學習・思考</span><span class="level lv-進階">進階</span></div>
+      <h2>教我一個概念<span class="chev">▾</span></h2>
+      <p class="desc">用不同層次解釋。</p>
+      <pre class="pbody">請教我：[概念]
+我的程度：[新手 / 中階 / 專業]
+請用以下方式說明：
+1. 一句話解釋
+2. 生活例子
+3. 專業定義
+4. 常見誤解
+5. 實際應用
+6. 3 題測驗確認我懂了</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">學習・思考</span><span class="level lv-專業">專業</span></div>
+      <h2>反向教學檢查<span class="chev">▾</span></h2>
+      <p class="desc">找出自己其實沒懂的地方。</p>
+      <pre class="pbody">請用反向教學法檢查我是否理解。
+主題：[主題]
+我的理解：[貼上我的說法]
+請輸出：
+1. 我理解正確的地方
+2. 我混淆的地方
+3. 我漏掉的關鍵概念
+4. 用問題追問我
+5. 給我一個實作題
+6. 判斷我是否真的懂</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">文字・內容</span><span class="level lv-基礎">基礎</span></div>
+      <h2>保留原意改寫<span class="chev">▾</span></h2>
+      <p class="desc">更清楚，不亂加。</p>
+      <pre class="pbody">請改寫以下文字，保留原意。
+文字：[貼上內容]
+目標語氣：[更直接 / 更專業 / 更自然 / 更有說服力]
+限制：不要新增不存在的資訊。
+請輸出 3 個版本，並說明差異。</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">文字・內容</span><span class="level lv-進階">進階</span></div>
+      <h2>刪廢話版本<span class="chev">▾</span></h2>
+      <p class="desc">壓短、變清楚。</p>
+      <pre class="pbody">請把以下內容刪掉廢話，變得更短、更清楚、更有力。
+內容：[貼上內容]
+請輸出：
+1. 精簡版
+2. 更強硬版
+3. 更溫和版
+4. 刪掉了哪些多餘內容</pre>
+    </article>
+<article class="open" data-static-card>
+      <div class="meta"><span class="tag">文字・內容</span><span class="level lv-專業">專業</span></div>
+      <h2>保留人格的編輯<span class="chev">▾</span></h2>
+      <p class="desc">不把文字修成無菌模板。</p>
+      <pre class="pbody">請編輯以下文字，但保留作者人格。
+文字：[貼上內容]
+作者風格：[直接/碎念/冷靜/有刺/溫柔]
+請遵守：
+- 不要修成公關稿
+- 不要把情緒磨平
+- 不要新增不存在的資訊
+- 只修清楚度、節奏、順序
+請輸出：
+1. 編輯版
+2. 保留了哪些原味
+3. 刪掉了哪些阻礙理解的句子</pre>
+    </article>
+    </div>
+    <div class="empty" id="empty">找不到符合的 prompt。換個分類或關鍵字試試。</div>
+  </section>
+</main>
+
+<section id="toolsView" style="display:none">
+  <h2>不要一個工具用到底</h2>
+  <p>同一件事，丟對工具差很多。下面是依任務分工的精選推薦——工具更新很快，記「任務 → 強項」的對應比記版本號實用。（更新：2026/06）</p>
+
+  <h2>文字・對話：三大模型</h2>
+  <div class="twrap"><table class="t">
+    <tr><th>模型</th><th>目前主力</th><th>最強的事</th><th>什麼時候用</th></tr>
+    <tr><td><b>Claude</b></td><td>Opus 4.8</td><td>長文件、會跑的程式、深度決策、長任務 agent</td><td>要「做到很乾淨、直接能用」</td></tr>
+    <tr><td><b>ChatGPT</b></td><td>GPT-5.4</td><td>發想、多版本、文筆、生圖、操作電腦</td><td>要「多給幾版讓我挑」</td></tr>
+    <tr><td><b>Gemini</b></td><td>3.1 Pro</td><td>接 Google 全家桶、超長 context（1M）、影音多模態</td><td>要「在我的 Gmail/Sheets 裡自動做完」</td></tr>
+  </table></div>
+
+  <h2>AI 圖片</h2>
+  <div class="twrap"><table class="t">
+    <tr><th>工具</th><th>強項</th><th>選它的理由</th></tr>
+    <tr><td><b>Midjourney V8</b></td><td>藝術感、美學控制</td><td>要好看、有風格的視覺</td></tr>
+    <tr><td><b>FLUX 2 Pro</b></td><td>寫實、商用、生成快</td><td>產品圖、擬真照片</td></tr>
+    <tr><td><b>Google Imagen 4</b></td><td>圖內文字最準</td><td>海報、UI、有文字的設計</td></tr>
+    <tr><td><b>Adobe Firefly 3</b></td><td>商用授權最安全</td><td>商業專案怕版權</td></tr>
+  </table></div>
+
+  <h2>AI 影片</h2>
+  <div class="twrap"><table class="t">
+    <tr><th>工具</th><th>強項</th><th>選它的理由</th></tr>
+    <tr><td><b>Google Veo 3.1</b></td><td>全能、4K、原生音訊</td><td>敘事、運鏡、品質最穩</td></tr>
+    <tr><td><b>Runway Gen-4</b></td><td>行銷、品牌、角色一致、內建編輯</td><td>做廣告／社群短片</td></tr>
+    <tr><td><b>Kling 3.0</b></td><td>電影感、複雜動態、多鏡頭</td><td>要運鏡與光影質感</td></tr>
+  </table></div>
+  <div class="note">⚠️ OpenAI 的 Sora 網頁／App 已於 2026/04/26 停用、API 預計 9/24 停。若還在用 Sora，建議改用 Veo、Kling 或 Runway。</div>
+
+  <h2>依任務選工具（速查）</h2>
+  <div class="twrap"><table class="t">
+    <tr><th>任務</th><th>首選</th><th>備援／次選</th></tr>
+    <tr><td>文案、社群貼文</td><td>ChatGPT</td><td>Claude（深度長文）</td></tr>
+    <tr><td>決策分析、長文件、寫程式</td><td>Claude</td><td>ChatGPT</td></tr>
+    <tr><td>接 Gmail/Docs/Sheets 自動化</td><td>Gemini</td><td>—</td></tr>
+    <tr><td>有風格的圖</td><td>Midjourney V8</td><td>FLUX 2 Pro</td></tr>
+    <tr><td>有文字的圖（海報／UI）</td><td>Imagen 4</td><td>Firefly 3</td></tr>
+    <tr><td>影片</td><td>Veo 3.1</td><td>Runway／Kling</td></tr>
+  </table></div>
+
+  <h2>搭配範例（這才是重點）</h2>
+  <p><b>① 出一篇社群行銷貼文＋配圖</b><br>Claude／ChatGPT 寫文案與分鏡 → Imagen 4 出有標題文字的主視覺 → Midjourney 出情境配圖。</p>
+  <p><b>② 從 0 規劃一個小工具／網站</b><br>Claude 規劃架構＋寫會跑的程式（配 CLAUDE.md 記憶） → ChatGPT 補發想與多版文案 → 上線。</p>
+  <p><b>③ 整理客戶往來＋產出週報</b><br>Gemini 從 Gmail／Sheets 撈資料整理 → Claude 做決策分析與乾淨週報。</p>
+
+  <div class="note">工具與排名變很快，以上為 2026/06 概況，實際以各官方為準。涉及機密資料上傳前先看平台資料政策。</div>
+</section>
+
+<section id="glossView" style="display:none">
+  <input id="glossSearch" type="search" placeholder="搜尋名詞：RAG、向量、語意、token、幻覺、agent…">
+  <p class="stats" id="glossStats"></p>
+  <div class="grid" id="glossCards"></div>
+  <div class="empty" id="glossEmpty">找不到這個名詞。換個關鍵字試試。</div>
+</section>
+
+<footer>
+  <b>版本 2026.06.06</b>　單檔 HTML，電腦與手機瀏覽器都可開，不用安裝、不用上傳資料。
+  收藏、最近使用、填過的變數與我的版本存在這台裝置；要搬到另一台，再用「匯出資料／匯入資料」帶走 JSON。
+</footer>
+
+<div class="data-panel" id="dataPanel" aria-hidden="true">
+  <header>
+    <div>
+      <b>個人資料匯出</b>
+      <span>下載若被瀏覽器擋住，就複製下面 JSON 到文字檔。</span>
+    </div>
+    <button class="ghost act" type="button" id="closeDataPanel">關閉</button>
+  </header>
+  <textarea id="exportText" readonly></textarea>
+  <div class="data-actions">
+    <button class="ghost act" type="button" id="copyExportText">複製 JSON</button>
+    <button class="act" type="button" id="downloadExportText">下載 JSON</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="workflowJson">
+{
+  "taskPacks": [
+    {
+      "category": "設計・影音",
+      "title": "做一張社群圖",
+      "desc": "從貼文主題走到可修正的圖片 prompt，不是一條指令丟完就算。",
+      "steps": [
+        {"label": "先寫配圖方向", "promptId": "設計・影音|社群貼文配圖"},
+        {"label": "補負面提示詞", "promptId": "設計・影音|負面提示詞"},
+        {"label": "失敗後診斷", "promptId": "設計・影音|失敗圖診斷"},
+        {"label": "局部修圖二修", "promptId": "設計・影音|照片修圖指令"}
+      ]
+    },
+    {
+      "category": "文字・內容",
+      "title": "寫一篇可發的社群貼文",
+      "desc": "先拿三版方向，再去掉模板味，最後補 CTA。",
+      "steps": [
+        {"label": "FB 三語氣", "promptId": "文字・內容|FB 貼文（強中弱三語氣）"},
+        {"label": "Threads 三語氣", "promptId": "文字・內容|Threads 貼文（強中弱三語氣）"},
+        {"label": "刪掉模板感", "promptId": "文字・內容|反模板改寫"},
+        {"label": "設計 CTA", "promptId": "文字・內容|CTA 行動呼籲設計"}
+      ]
+    },
+    {
+      "category": "開發・技術",
+      "title": "整理一個 Node.js 專案",
+      "desc": "從專案規範、錯誤、API 到部署，不跳去做過度設計。",
+      "steps": [
+        {"label": "建立專案規範", "promptId": "開發・技術|產生 CLAUDE.md"},
+        {"label": "看懂錯誤", "promptId": "開發・技術|錯誤訊息翻譯"},
+        {"label": "產 API 文件", "promptId": "開發・技術|API 文件產生"},
+        {"label": "上線前檢查", "promptId": "開發・技術|部署檢查清單"}
+      ]
+    },
+    {
+      "category": "商業・策略",
+      "title": "做一個能下決定的方案",
+      "desc": "先定客群，再拆競品、定價，最後留下決策紀錄。",
+      "steps": [
+        {"label": "定義客群", "promptId": "商業・策略|客群描述"},
+        {"label": "拆競品", "promptId": "商業・策略|競品拆解"},
+        {"label": "檢查定價", "promptId": "商業・策略|定價檢查"},
+        {"label": "寫決策備忘錄", "promptId": "商業・策略|決策備忘錄"}
+      ]
+    },
+    {
+      "category": "數據・文書",
+      "title": "把報表變成行動",
+      "desc": "不是摘要數字，是找異常、原因、下一步。",
+      "steps": [
+        {"label": "資料摘要", "promptId": "數據・文書|資料摘要"},
+        {"label": "趨勢摘要", "promptId": "數據・文書|趨勢摘要"},
+        {"label": "報表結論化", "promptId": "數據・文書|報表結論化"},
+        {"label": "Excel 公式", "promptId": "數據・文書|Excel 公式產生"}
+      ]
+    },
+    {
+      "category": "流程・營運",
+      "title": "把人工流程變 SOP",
+      "desc": "先整理流程，再壓力測試，避免寫出只在理想狀態成立的 SOP。",
+      "steps": [
+        {"label": "產生 SOP", "promptId": "流程・營運|SOP 產生器"},
+        {"label": "品質檢查表", "promptId": "流程・營運|品質檢查表"},
+        {"label": "SOP 壓力測試", "promptId": "流程・營運|SOP 壓力測試"},
+        {"label": "人機分工", "promptId": "流程・營運|AI 人機分工"}
+      ]
+    }
+  ]
+}
+</script>
+
+<script>
+/* ---------- 資料庫 ---------- */
+// 詳解型（多行完整 prompt，方括號為可填變數）
+const detailed = [
+  ["通用結構","基礎","萬用任務提示","任何任務都能用，先把 AI 拉回可控範圍。",
+`你現在是[角色]。
+目標：[我要完成什麼]
+背景：[必要背景]
+素材：[貼上內容或資料]
+限制：[不能做什麼 / 必須遵守什麼]
+輸出格式：[條列 / 表格 / JSON / Markdown]
+請先給結論，再給理由。`],
+  ["通用結構","進階","需求整理成規格","把混亂需求整理成可以開工的文件。",
+`請把以下需求整理成可執行規格。
+需求：[貼上內容]
+請輸出：
+1. 目標
+2. 使用者情境
+3. 必要功能
+4. 暫不做功能
+5. 資料需求
+6. 權限規則
+7. 驗收標準
+8. 風險與未確認問題`],
+  ["通用結構","專業","高精度任務拆解","複雜任務，要求 AI 先拆問題再輸出。",
+`你是資深問題拆解顧問。
+任務：[任務]
+背景：[背景]
+已知限制：[限制]
+請先做問題拆解：
+1. 這個任務真正要解決的問題
+2. 需要哪些輸入
+3. 哪些假設可能錯
+4. 最小可行做法
+5. 完整做法
+6. 風險
+最後再給可執行步驟。`],
+  ["商業策略","進階","功能取捨","判斷功能該做、不做、延後。",
+`你是務實的產品負責人。
+請評估功能：[功能名稱]
+產品背景：[背景]
+使用者：[使用者]
+請用以下標準判斷：
+- 是否解決現在的真問題
+- 開發成本
+- 維護成本
+- 3 個月內是否用得到
+- 是否有免費或簡化替代方案
+最後輸出：做 / 不做 / 延後，並說明原因。`],
+  ["商業策略","專業","商業模式壓力測試","檢查產品是不是只好看但不賺錢。",
+`請壓力測試這個商業模式。
+產品：[產品]
+客群：[客群]
+收費方式：[收費]
+成本結構：[成本]
+目前資源：[資源]
+請輸出：
+1. 最脆弱的假設
+2. 最可能失敗的原因
+3. 需要驗證的 5 個問題
+4. 低成本驗證方法
+5. 如果驗證失敗，如何縮小範圍
+6. 最終建議`],
+  ["商業策略","專業","決策備忘錄","適合重大技術或商業選擇。",
+`請寫一份決策備忘錄。
+決策題目：[題目]
+候選方案：[A/B/C]
+背景：[背景]
+限制：[限制]
+請輸出：
+結論先行：建議選項、不選其他方案的原因
+再輸出：
+1. 評估標準
+2. 成本
+3. 風險
+4. 短期影響
+5. 長期維護
+6. 可逆性
+7. 下一步`],
+  ["商業策略","專業","MVP 切版","把過大的需求切成第一版能活的範圍。",
+`請把這個產品需求切成 MVP。
+需求：[貼上需求]
+目標用戶：[用戶]
+商業目標：[目標]
+請輸出：
+1. 第一版只做什麼
+2. 明確不做什麼
+3. 為什麼不做
+4. 必要資料表或欄位
+5. 第一版驗收標準
+6. 上線後看哪些指標
+7. 第二版才考慮的功能`],
+  ["內容文案","基礎","社群貼文","快速產出可發布版本。",
+`請幫我寫一篇社群貼文。
+主題：[主題]
+目標受眾：[誰會看]
+語氣：[直接 / 溫暖 / 專業 / 幽默]
+重點：[3-5 個重點]
+限制：[字數、禁用詞、平台]
+請提供 3 個版本：短版、中版、強 CTA 版。`],
+  ["內容文案","進階","銷售頁文案","商品頁、服務頁、活動頁適用。",
+`你是轉換率文案顧問。
+產品：[產品]
+受眾：[受眾]
+痛點：[痛點]
+特色：[特色]
+證據：[案例、數據、評價]
+請產出：
+1. 主標題 5 個
+2. 副標題 5 個
+3. 痛點段落
+4. 解決方案段落
+5. FAQ 5 題
+6. CTA 5 個`],
+  ["內容文案","專業","品牌語氣系統","建立長期一致的文案口吻。",
+`請建立品牌語氣系統。
+品牌：[品牌]
+受眾：[受眾]
+產品：[產品]
+不想像：[討厭的語氣或品牌]
+想接近：[參考語氣]
+請輸出：
+1. 品牌個性
+2. 說話原則
+3. 禁用語氣
+4. 常用詞
+5. 避免詞
+6. 社群貼文範例
+7. 客服回覆範例
+8. 銷售頁範例`],
+  ["內容文案","專業","反模板改寫","刪掉 AI 味、套版感、假溫馨。",
+`請把以下文字改到不像 AI 寫的。
+文字：[貼上內容]
+要求：
+- 刪掉空泛形容詞
+- 刪掉假溫馨
+- 刪掉過度完整的模板句
+- 保留真實口氣
+- 不要新增不存在的資訊
+請輸出：
+1. 改寫版
+2. 刪掉哪些 AI 味
+3. 哪些句子保留原樣，為什麼`],
+  ["視覺設計","進階","設計直覺評估","先感覺，再分析。",
+`請用直覺優先的方式評估這個設計。
+設計內容：[貼圖或描述]
+請依序輸出：
+1. 第一眼直覺反應
+2. 情緒感受
+3. 空氣感與生命感
+4. 可能聯想
+5. 設計原因回推
+6. 具體修改建議
+不要先講排版理論。`],
+  ["視覺設計","專業","視覺語意誤判檢查","檢查畫面是否傳出錯誤情緒。",
+`請檢查這張視覺是否有語意誤判。
+作品：[貼圖或描述]
+原本目的：[想傳達什麼]
+請依序輸出：
+1. 第一眼像什麼
+2. 情緒像什麼
+3. 哪些元素造成誤判
+4. 色彩語意
+5. 構圖語意
+6. 人物或物件姿態語意
+7. 如何改到更接近原目的`],
+  ["視覺設計","專業","版面空氣感修正","讓畫面有呼吸，不是堆滿元素。",
+`請評估這個版面的空氣感。
+畫面描述：[描述]
+使用場景：[場景]
+請輸出：
+1. 哪裡太擠
+2. 哪裡太空
+3. 視線流動是否順
+4. 主次是否清楚
+5. 哪些元素可以刪
+6. 字級與間距修正建議
+7. 修改後的版面配置文字稿`],
+  ["AI 圖片","專業","空間錯視 Prompt","不是炸裂特效，是讓人眼覺得空間怪。",
+`Analyze the original photo's spatial structure first.
+Identify compositional flow, illusion anchor, and possible depth reassignment.
+Create a subtle spatial contradiction using local spatial displacement and depth-plane inconsistency.
+Keep the subject believable.
+Avoid generic breakout, giant hands, giant feet, fisheye, picture frame, superhero pose, surreal redesign, liquid melting, and AI fantasy environment.
+Add only minimal cinematic enhancement.
+Goal: viewer feels the space is slightly wrong, not that the effect is explosive.`],
+  ["AI 圖片","專業","照片空間解析","生成前先拆原圖，不套模板。",
+`Please analyze this photo before generating any edit.
+Output:
+1. Original spatial structure
+2. Main perspective direction
+3. Compositional flow
+4. Existing depth planes
+5. Possible illusion anchor
+6. Best local depth reassignment
+7. What must not be changed
+8. One subtle spatial contradiction idea
+Do not propose generic breakout effects.`],
+  ["AI 圖片","專業","局部深度重分配","只改局部空間，不破壞照片可信度。",
+`Create a subtle local depth reassignment.
+Source image context: [describe image]
+Keep identity, lighting direction, lens feeling, and original environment.
+Use a small spatial offset along the original compositional flow.
+Create depth-plane inconsistency only around [anchor object].
+Avoid dramatic fantasy, fisheye, broken frame, giant limbs, and explosive effects.
+The final image should feel photographically plausible but spatially uneasy.`],
+  ["程式開發","基礎","Bug 分析","貼錯誤訊息與程式碼，找最小修正。",
+`你是資深 Node.js 工程師。
+錯誤訊息：[貼上錯誤]
+相關程式碼：[貼上程式]
+預期行為：[應該怎樣]
+實際行為：[現在怎樣]
+請輸出：
+1. 最可能原因
+2. 如何驗證
+3. 最小修正方案
+4. 可能副作用`],
+  ["程式開發","進階","API 規格設計","Node.js + PostgreSQL，不用 ORM。",
+`請設計 Node.js + PostgreSQL API 規格。
+功能：[功能]
+資料表：[資料結構或欄位]
+權限：[誰可以操作]
+請輸出：
+- Endpoint
+- Method
+- Request body
+- Response JSON
+- Status code
+- SQL 查詢重點
+- 必要驗證
+不要使用 ORM。`],
+  ["程式開發","專業","資料庫 Schema Review","檢查 PostgreSQL 表設計能不能撐 3-5 年。",
+`你是 PostgreSQL 架構審查員。
+Schema：[貼上 schema]
+產品需求：[需求]
+請檢查：
+1. 欄位命名是否一致
+2. 型別是否合理
+3. 主鍵與外鍵
+4. 索引是否足夠
+5. 查詢會不會慢
+6. 是否過度設計
+7. 缺少哪些約束
+8. migration 風險
+請給最小修改 SQL。不要建議 ORM。`],
+  ["程式開發","專業","安全審查","檢查 Express 專案基本安全。",
+`你是 Node.js 安全審查員。
+程式碼：[貼上程式碼]
+環境：[部署環境]
+請檢查：
+1. .env 是否正確使用
+2. SESSION_SECRET 是否硬編碼
+3. helmet
+4. rate-limit
+5. SQL injection
+6. XSS
+7. CSRF 或 session 風險
+8. 權限檢查漏洞
+請輸出問題、嚴重度、修正方式。`],
+  ["程式開發","專業","PR Code Review","用 code review 角度抓 bug，不是稱讚。",
+`請用 code review 角度審查以下變更。
+變更內容：[貼上 diff 或程式]
+請優先找：
+1. bug
+2. 行為回歸
+3. 安全風險
+4. 缺少測試
+5. 維護成本
+6. 邊界案例
+輸出格式：[P0/P1/P2] 問題標題、檔案與行號、為什麼是問題、建議修法。
+沒有問題就明確說沒有。`],
+  ["程式開發","專業","SQL 查詢優化","針對慢查詢找索引與改寫方式。",
+`你是 PostgreSQL 效能顧問。
+慢查詢：[貼上 SQL]
+資料量：[資料量]
+表結構：[schema]
+目前索引：[indexes]
+請輸出：
+1. 慢的可能原因
+2. 建議 EXPLAIN ANALYZE 看什麼
+3. SQL 改寫
+4. 索引建議
+5. 不建議加的索引
+6. 寫入成本影響`],
+  ["資料分析","基礎","資料摘要","把資料變結論。",
+`請分析以下資料。
+資料：[貼上資料]
+請輸出：
+1. 3 個最重要結論
+2. 異常或矛盾處
+3. 可能原因
+4. 下一步建議
+5. 需要補充的資料`],
+  ["資料分析","進階","方案比較表","多方案做決策。",
+`請比較以下方案：[方案 A / B / C]
+評估標準：[成本、時間、風險、維護、成效]
+請輸出表格，欄位包含：方案、優點、缺點、成本、風險、適合情境、最終建議。
+結論放最前面。`],
+  ["資料分析","專業","指標異常診斷","找營運數據為什麼變差。",
+`請診斷這個指標異常。
+指標：[指標名稱]
+時間範圍：[時間]
+變化：[上升/下降多少]
+相關資料：[貼上資料]
+請輸出：
+1. 最可能原因排序
+2. 需要切分的維度
+3. 可能是假警報的原因
+4. 要查的 SQL 或資料欄位
+5. 下一步驗證順序
+6. 暫時不要做的錯誤決策`],
+  ["資料分析","專業","資料品質檢查","檢查資料能不能拿來做決策。",
+`請檢查這批資料品質。
+資料：[貼上資料或欄位描述]
+用途：[要拿來做什麼決策]
+請輸出：
+1. 缺值問題
+2. 重複問題
+3. 定義不一致
+4. 時間範圍偏差
+5. 樣本偏差
+6. 不能直接下結論的地方
+7. 清理規則建議
+8. 可用與不可用結論`],
+  ["工作流","進階","SOP 產生器","把工作流程整理成標準作業。",
+`請把以下流程整理成 SOP。
+流程描述：[貼上內容]
+角色：[誰執行]
+工具：[使用工具]
+請輸出：
+1. 目的
+2. 適用範圍
+3. 前置條件
+4. 步驟
+5. 檢查點
+6. 常見錯誤
+7. 完成標準`],
+  ["工作流","專業","AI 自動化流程設計","設計 AI 協作流程，不先寫程式。",
+`請設計一個 AI 輔助工作流。
+任務：[任務]
+目前流程：[流程]
+輸入資料：[資料]
+輸出成果：[成果]
+限制：[成本、工具、權限]
+請輸出：
+1. 哪些步驟適合 AI
+2. 哪些步驟必須人工確認
+3. Prompt 節點設計
+4. 資料格式
+5. 品質檢查規則
+6. 失敗回退流程
+7. 第一版最小落地方案`],
+  ["工作流","專業","營運例外處理","處理不是正常流程的狀況。",
+`請設計例外處理流程。
+正常流程：[流程]
+例外狀況：[狀況]
+影響對象：[對象]
+請輸出：
+1. 例外分類
+2. 判斷條件
+3. 第一線處理方式
+4. 需要升級的條件
+5. 記錄哪些資料
+6. 對客戶怎麼說
+7. 後續如何防止重複發生`],
+  ["學習整理","基礎","文章重點整理","長文變筆記。",
+`請整理以下文章。
+文章：[貼上內容]
+請輸出：
+1. 一句話總結
+2. 核心觀點 5 點
+3. 重要名詞解釋
+4. 可行動建議
+5. 我應該記住什麼`],
+  ["學習整理","進階","教我一個概念","用不同層次解釋。",
+`請教我：[概念]
+我的程度：[新手 / 中階 / 專業]
+請用以下方式說明：
+1. 一句話解釋
+2. 生活例子
+3. 專業定義
+4. 常見誤解
+5. 實際應用
+6. 3 題測驗確認我懂了`],
+  ["學習整理","專業","反向教學檢查","找出自己其實沒懂的地方。",
+`請用反向教學法檢查我是否理解。
+主題：[主題]
+我的理解：[貼上我的說法]
+請輸出：
+1. 我理解正確的地方
+2. 我混淆的地方
+3. 我漏掉的關鍵概念
+4. 用問題追問我
+5. 給我一個實作題
+6. 判斷我是否真的懂`],
+  ["改寫潤稿","基礎","保留原意改寫","更清楚，不亂加。",
+`請改寫以下文字，保留原意。
+文字：[貼上內容]
+目標語氣：[更直接 / 更專業 / 更自然 / 更有說服力]
+限制：不要新增不存在的資訊。
+請輸出 3 個版本，並說明差異。`],
+  ["改寫潤稿","進階","刪廢話版本","壓短、變清楚。",
+`請把以下內容刪掉廢話，變得更短、更清楚、更有力。
+內容：[貼上內容]
+請輸出：
+1. 精簡版
+2. 更強硬版
+3. 更溫和版
+4. 刪掉了哪些多餘內容`],
+  ["改寫潤稿","專業","保留人格的編輯","不把文字修成無菌模板。",
+`請編輯以下文字，但保留作者人格。
+文字：[貼上內容]
+作者風格：[直接/碎念/冷靜/有刺/溫柔]
+請遵守：
+- 不要修成公關稿
+- 不要把情緒磨平
+- 不要新增不存在的資訊
+- 只修清楚度、節奏、順序
+請輸出：
+1. 編輯版
+2. 保留了哪些原味
+3. 刪掉了哪些阻礙理解的句子`]
+];
+
+// 速查型（單行，含可填變數）
+const compact = [
+  ["通用結構","基礎","快速摘要","把內容壓成可讀結論","請摘要以下內容：[貼上內容]，輸出一句話結論、3 個重點、1 個下一步。"],
+  ["通用結構","基礎","待辦清單","把對話變成行動","請把以下內容整理成待辦清單：[貼上內容]，分成今天、這週、之後，並標註優先順序。"],
+  ["通用結構","基礎","會議紀錄","把討論內容轉成紀錄","請整理會議紀錄：[貼上逐字稿]，輸出決議、待辦、負責人、期限、未決問題。"],
+  ["通用結構","基礎","表格整理","把散亂文字變表格","請把以下內容整理成 Markdown 表格：[貼上內容]，欄位自行判斷，缺資料請留空。"],
+  ["通用結構","基礎","翻譯保語氣","翻譯但不變味","請把以下文字翻成[目標語言]：[貼上文字]，保留原本語氣，不要修成正式公文。"],
+  ["通用結構","進階","假設清單","找出回答裡的隱藏假設","請列出這個方案依賴的假設：[貼上方案]，並標註哪些最需要驗證。"],
+  ["通用結構","進階","反方檢查","讓 AI 反駁方案","請站在反方角度批判這個方案：[貼上方案]，找出最可能被忽略的風險。"],
+  ["通用結構","進階","輸出格式校正","要求固定格式","請依照指定格式輸出，不要加前言或結尾。內容：[內容]。格式：[貼上格式]。"],
+  ["通用結構","專業","多輪任務控制","複雜任務分階段","任務：[任務]。請拆成 3 輪：先釐清資料、再產出草案、最後做品質檢查。每輪只做該輪工作，做完問我是否進下一輪。"],
+  ["通用結構","專業","品質審查器","產出後自我檢查","任務：[任務]。請先完成任務，再用檢查清單審查自己的輸出，最後只交付修正後版本。"],
+  ["商業策略","基礎","客群描述","定義產品受眾","產品：[產品]。請描述目標客群，包含身份、痛點、使用場景、付費動機與拒絕原因。"],
+  ["商業策略","基礎","痛點整理","把抱怨轉成需求","請把以下客戶抱怨：[貼上內容] 整理成痛點、需求、可能功能與不該做的功能。"],
+  ["商業策略","進階","定價檢查","判斷價格是否合理","產品：[產品]，定價：[價格]。請評估這個定價，分析成本、價值感、替代品、付費阻力與測試方法。"],
+  ["商業策略","進階","冷啟動策略","產品剛上線怎麼跑","產品：[產品]。請設計冷啟動策略，輸出第一批用戶、觸達方式、免費方案、驗證指標。"],
+  ["商業策略","進階","營收漏斗","找出轉換斷點","商業模式：[描述]。請拆解營收漏斗，標出每一段轉換、流失原因、可改善動作與優先順序。"],
+  ["商業策略","專業","單位經濟模型","檢查獲利邏輯","產品與數據：[貼上]。請建立簡化 unit economics，包含 CAC、LTV、毛利、回本週期、敏感度與風險。"],
+  ["商業策略","專業","競爭壁壘分析","判斷護城河真假","產品：[產品]。請分析競爭壁壘，區分真正壁壘、短期優勢、假壁壘與補強方式。"],
+  ["商業策略","專業","市場進入策略","切第一個市場","產品：[產品]，市場：[市場]。請設計 go-to-market，包含早期客群、訊息、渠道、免費測試、成交路徑、指標。"],
+  ["商業策略","專業","營運成本壓力測試","檢查系統長期撐不撐","營運描述：[貼上]。請壓力測試營運成本，分析人工、客服、資料、技術、金流與例外處理成本。"],
+  ["商業策略","專業","退出條件","知道何時停止","專案：[專案]。請定義停止條件，包含時間、成本、指標、學到什麼才算值得繼續。"],
+  ["內容文案","基礎","標題產生器","快速產標題","主題：[主題]。請產出 20 個標題，分成直接、好奇、痛點、利益、反直覺。"],
+  ["內容文案","基礎","Email 回覆","寫清楚不失禮","請幫我回覆這封信：[貼上來信]，語氣清楚、簡短、不過度客套。"],
+  ["內容文案","進階","短影音腳本","Reels/TikTok 腳本","主題：[主題]。請寫 30 秒短影音腳本，包含開場鉤子、畫面、旁白、節奏、結尾 CTA。"],
+  ["內容文案","進階","SEO 文章架構","文章規劃","關鍵字：[關鍵字]。請規劃 SEO 文章架構，包含搜尋意圖、H1/H2/H3、FAQ、內鏈建議。"],
+  ["內容文案","進階","活動文案","活動頁與貼文","活動：[活動內容]。請寫活動文案，包含主標、副標、活動利益、限制、流程、FAQ、CTA。"],
+  ["內容文案","專業","銷售異議處理","處理不買原因","產品：[產品]，受眾：[受眾]。請列出 10 個購買異議，逐一給回應策略與文案。"],
+  ["內容文案","專業","轉換率文案審查","找文案為何不賣","請審查這段銷售文案：[貼上文案]，找出信任不足、痛點不準、CTA 弱、證據不足之處。"],
+  ["內容文案","專業","內容矩陣","一個主題拆多平台","主題：[主題]。請拆成內容矩陣，分成社群、Email、文章、短影音、直播題綱。"],
+  ["內容文案","專業","危機聲明","出事時對外說法","事件：[事件]。請寫危機聲明，承認事實、說明影響、處理方式、補救、後續承諾，不推責。"],
+  ["內容文案","專業","高信任 FAQ","降低購買疑慮","產品：[產品]。請產出高信任 FAQ，問題要尖銳，回答要具體，不要公關腔。"],
+  ["視覺設計","基礎","第一眼評估","快速看圖感覺","作品：[貼圖或描述]。請只說第一眼感覺、像什麼、哪裡怪，先不要講設計理論。"],
+  ["視覺設計","基礎","色彩感受","檢查配色情緒","配色：[色碼或描述]。請評估這組色彩帶來的情緒、年齡感、價格感、品牌聯想。"],
+  ["視覺設計","進階","品牌視覺方向","建立視覺語氣","品牌：[品牌]。請定義品牌視覺方向，包含氣質、色彩、字體、攝影、禁忌與參考關鍵字。"],
+  ["視覺設計","進階","Landing Page 視覺審查","檢查首頁是否有轉換力","頁面：[貼圖或描述]。請審查 landing page 的第一屏、主次、信任感、CTA、視線流動與模板感。"],
+  ["視覺設計","進階","UI 密度評估","工具型介面適用","介面：[貼圖或描述]。請評估資訊密度、掃描效率、按鈕層級、表格可讀性與操作成本。"],
+  ["視覺設計","專業","反模板視覺審查","找出套版感","設計：[貼圖或描述]。請指出哪裡像模板、哪裡假高級、哪裡過度精緻，並給具體修法。"],
+  ["視覺設計","專業","情緒語意校正","避免傳錯情緒","作品：[貼圖]，想傳達：[情緒]。請判斷是否傳出錯誤情緒，從色彩、構圖、人物、光線、留白回推。"],
+  ["視覺設計","專業","產品 UI 系統化","建立長期可維護 UI","產品：[產品]。請規劃 UI system，包含元件層級、表格、表單、狀態、空狀態、錯誤訊息。"],
+  ["視覺設計","專業","攝影選圖審查","判斷照片能不能用","照片：[貼圖]，品牌：[品牌]。請評估是否真實、有生命感、適合品牌，指出像素材圖或假情緒的地方。"],
+  ["視覺設計","專業","版面重構指令","把爛版面救回來","版面：[貼圖或描述]。請重構，保留內容，重新安排資訊層級、留白、CTA、段落節奏。"],
+  ["AI 圖片","基礎","商品圖提示","乾淨商品圖","商品：[商品]。請為商品生成圖片 prompt，包含材質、光線、背景、比例、視角與禁用元素。"],
+  ["AI 圖片","基礎","人物形象提示","人物照方向","角色設定：[描述]。請產出人物形象 prompt，包含年齡感、服裝、表情、姿態、光線、場景。"],
+  ["AI 圖片","進階","一致角色","讓角色多張圖一致","角色：[角色]。請建立角色一致性 prompt，包含臉型、髮型、服裝、氣質、鏡頭、不可改變元素。"],
+  ["AI 圖片","進階","商業海報圖","活動主視覺","活動：[活動]。請產出商業海報圖 prompt，包含主體、情緒、構圖、文字留白、品牌感、禁用方向。"],
+  ["AI 圖片","進階","照片修圖指令","局部修圖","原圖：[描述]，要改：[區域]。請寫局部修圖 prompt，只調整指定區域，保留身份、光線、透視與背景一致。"],
+  ["AI 圖片","專業","空間錯視前置分析","生成前拆空間","原圖：[describe]。請先分析透視、深度平面、動勢、遮擋關係，再提出最小錯視改動。"],
+  ["AI 圖片","專業","局部空間矛盾","細微怪感","原圖：[describe]，錨點：[anchor]。請沿原圖 compositional flow 做 local spatial displacement，不做爆炸特效。"],
+  ["AI 圖片","專業","光影一致性修正","避免 AI 假圖","圖：[describe]。請檢查並修正光源方向、陰影接觸、反射、材質與景深一致性。"],
+  ["AI 圖片","專業","品牌影像 Prompt System","可重複使用影像規範","品牌：[品牌]。請建立品牌影像 prompt system，包含場景、人物、光線、色彩、禁用元素與範例。"],
+  ["AI 圖片","專業","失敗圖診斷","判斷 AI 圖為何失敗","圖：[describe]。請診斷失敗原因，分成空間、肢體、光影、語意、材質、模板感。"],
+  ["程式開發","基礎","錯誤訊息翻譯","看懂 error","錯誤：[貼上 error]。請解釋這個錯誤訊息的意思、可能原因、如何一步步排查。"],
+  ["程式開發","基礎","README 產生","專案說明","專案：[描述或貼程式]。請產生 README，包含安裝、環境變數、啟動、測試、部署。"],
+  ["程式開發","進階","資料表設計","PostgreSQL schema","需求：[需求]。請設計 PostgreSQL 資料表，包含欄位、型別、索引、約束、created_at、updated_at。不要 ORM。"],
+  ["程式開發","進階","Express 路由設計","後端 route","功能：[功能]。請設計 Express 路由與 handler 結構，包含驗證、權限、SQL、錯誤處理。"],
+  ["程式開發","進階","測試案例設計","寫測試前先列案例","功能：[功能]。請列出測試案例，包含正常、邊界、權限、錯誤輸入、資料庫狀態。"],
+  ["程式開發","專業","架構風險審查","長期維護檢查","架構：[描述]。請審查 3-5 年維護風險，找出耦合、資料一致性、部署、權限、擴充問題。"],
+  ["程式開發","專業","資料遷移計畫","安全改 schema","變更：[schema 變更]。請設計 PostgreSQL migration plan，包含 backfill、lock 風險、rollback、驗證 SQL。"],
+  ["程式開發","專業","Session 安全設計","登入安全","環境：[描述]。請設計 session 安全方案，包含 SESSION_SECRET、cookie、CSRF、rate-limit、logout、過期策略。"],
+  ["程式開發","專業","多租戶權限","SaaS 權限隔離","產品：[產品]。請設計多租戶資料隔離與權限檢查，包含 SQL 條件、索引、測試、常見漏洞。"],
+  ["程式開發","專業","部署檢查清單","上線前檢查","專案：[Node.js 專案]。請產出部署檢查清單，包含 env、DB、security、logs、backup、rollback。"],
+  ["資料分析","基礎","CSV 欄位解讀","先看欄位","資料：[貼上欄位]。請解讀每欄意思、可能型別與可分析問題。"],
+  ["資料分析","基礎","趨勢摘要","看變化","資料：[貼上資料]。請分析趨勢，指出上升、下降、波動、異常點與可能原因。"],
+  ["資料分析","進階","漏斗分析","轉換率","資料：[各階段數字]。請做漏斗分析，計算每段轉換、流失、最大斷點與改善建議。"],
+  ["資料分析","進階","分群分析","客群切分","資料：[貼上]。請提出分群方式，說明每群特徵、價值、風險、行動建議。"],
+  ["資料分析","進階","A/B Test 解讀","實驗結果","實驗數據：[貼上]。請解讀 A/B test，包含樣本、差異、可信度、可能偏差、是否採用。"],
+  ["資料分析","專業","因果假設檢查","避免亂下結論","觀察：[現象]。請區分相關與因果，列出替代解釋、混淆變數、需要補的實驗或資料。"],
+  ["資料分析","專業","指標定義系統","避免各說各話","指標：[指標清單]。請建立指標定義文件，包含公式、資料來源、更新頻率、排除條件、擁有人。"],
+  ["資料分析","專業","儀表板審查","Dashboard 是否有用","儀表板：[描述]。請找出虛榮指標、缺少行動性、定義不清與視覺誤導。"],
+  ["資料分析","專業","營收預測壓力測試","預測合理性","預測：[假設與數字]。請壓力測試，分析假設、敏感度、最好/正常/最壞情境。"],
+  ["資料分析","專業","SQL 分析規格","讓分析可落地","分析問題：[問題]。請轉成 SQL 規格，包含表、欄位、join、where、group by、輸出欄位。"],
+  ["工作流","基礎","客服回覆流程","客服 SOP","情境：[描述]。請設計客服回覆流程，包含分類、標準回覆、升級條件、紀錄欄位。"],
+  ["工作流","基礎","每日例行清單","每日工作整理","工作內容：[貼上]。請整理成每日例行清單，分成檢查、處理、回報、追蹤。"],
+  ["工作流","進階","跨部門交接","減少漏接","交接內容：[描述]。請設計交接流程，包含交接內容、責任人、確認點、失敗處理。"],
+  ["工作流","進階","品質檢查表","交付前 QA","交付物：[描述]。請建立品質檢查表，分成內容、資料、權限、錯誤、使用者體驗。"],
+  ["工作流","進階","人工審核流程","AI 後人工確認","情境：[描述]。請設計人工審核流程，包含審核項目、通過標準、退回原因、記錄方式。"],
+  ["工作流","專業","營運系統化","把人工作業變系統","現有作業：[描述]。請找出可系統化、可半自動、不可自動的部分，並排優先序。"],
+  ["工作流","專業","風險回報機制","出事前先看到","業務：[描述]。請設計風險回報機制，包含警示條件、嚴重度、通知對象、處理 SLA。"],
+  ["工作流","專業","資料流設計","多系統資料同步","系統：[描述]。請設計資料流，包含來源、轉換、儲存、同步頻率、錯誤重試、稽核。"],
+  ["工作流","專業","AI 人機分工","不要全丟給 AI","流程：[描述]。請拆出 AI 做、人工做、AI 草稿人工審、不可自動化的任務邊界。"],
+  ["工作流","專業","SOP 壓力測試","流程會不會壞","SOP：[貼上]。請壓力測試，找出例外、灰色地帶、責任不清、缺少紀錄、無法驗收之處。"],
+  ["學習整理","基礎","名詞解釋","快速懂術語","名詞：[名詞]。請用一句話、生活例子、專業定義、常見誤解解釋。"],
+  ["學習整理","基礎","讀書筆記","整理書籍內容","書/章節：[內容]。請整理成章節重點、關鍵概念、可實作方法、值得重讀句。"],
+  ["學習整理","進階","學習路線圖","規劃學習順序","主題：[主題]，程度：[程度]。請規劃學習路線，分成入門、實作、進階、檢核標準。"],
+  ["學習整理","進階","錯題分析","找學不會原因","錯題：[貼上]。請分析答錯原因，分成概念不懂、粗心、題意誤解、方法錯。"],
+  ["學習整理","進階","一頁筆記","壓成可複習內容","主題：[主題]。請整理成一頁筆記，包含定義、流程、例子、陷阱、測驗。"],
+  ["學習整理","專業","專家盲點拆解","看懂專業文章","文章：[貼上]。請拆解隱含前提、術語、方法論、爭議點與實務限制。"],
+  ["學習整理","專業","知識系統圖","建立知識架構","主題：[主題]。請整理成知識系統圖，用階層列出概念、關係、依賴與學習順序。"],
+  ["學習整理","專業","研究問題生成","從資料找問題","資料：[貼上]。請提出 10 個值得研究的問題，分成描述、診斷、預測、決策。"],
+  ["學習整理","專業","概念遷移","把知識用到新領域","概念：[概念]，新情境：[情境]。請說明如何應用，列出可轉移與不可轉移部分。"],
+  ["學習整理","專業","深度問答教練","逼自己想清楚","主題：[主題]。請連續追問我 8 個問題，每題根據上一題回答加深，不要一次問完。"],
+  ["改寫潤稿","基礎","更口語","變自然","文字：[貼上]。請改得更像真人說話，保留意思，不要加油添醋。"],
+  ["改寫潤稿","基礎","更正式","商務場合","文字：[貼上]。請改得更正式清楚，但不要變得冗長或官腔。"],
+  ["改寫潤稿","進階","降低攻擊性","保留立場但不太刺","文字：[貼上]。請降低攻擊性，保留清楚立場，不要變成道歉文。"],
+  ["改寫潤稿","進階","增強說服力","讓論點更穩","文字：[貼上]。請增強說服力，補強論點順序、證據位置、反對意見回應。"],
+  ["改寫潤稿","進階","繁中在地化","不要翻譯腔","文字：[貼上]。請改成自然台灣繁中，刪掉翻譯腔、簡中詞、過度正式語氣。"],
+  ["改寫潤稿","專業","CEO 口吻修稿","直接、有決策感","文字：[貼上]。請改成創業者/CEO 口吻，結論先行，保留鋒利度，刪掉模糊語氣。"],
+  ["改寫潤稿","專業","法律風險降溫","降低指控風險","文字：[貼上]。請在不改變主張下降低法律風險，避免絕對指控與無證據判斷。"],
+  ["改寫潤稿","專業","投資人簡報語氣","更精準","文字：[貼上]。請改成投資人簡報語氣，重點是市場、問題、解法、牽引力、商業模式。"],
+  ["改寫潤稿","專業","客服衝突降溫","客訴回覆","客訴：[貼上]。請把回覆改到清楚、有界線、可執行，不過度道歉也不激怒對方。"],
+  ["改寫潤稿","專業","刪模板保人味","保留真實感","文字：[貼上]。請刪掉模板感句子，保留人味、節奏、停頓與必要的不完美。"],
+  ["提示工程","基礎","萬用公式套版","快速把需求變好 prompt","請把我的需求變成結構化 prompt。需求：[貼上]。輸出含角色、目標、背景、素材、限制、輸出格式，並要求先給結論。"],
+  ["提示工程","進階","幫我優化 Prompt","改進現有指令","這是我的 prompt：[貼上]。請指出不清楚、缺角色、缺限制、缺輸出格式之處，並給優化版與優化理由。"],
+  ["提示工程","進階","Few-shot 範例設計","給 AI 看範例","任務：[任務]。請幫我設計 2-3 個 few-shot 範例（輸入→輸出），讓 AI 學會我要的格式與風格。"],
+  ["提示工程","專業","角色系統指令","建立穩定 AI 助手","用途：[用途]。請幫我寫一段 system prompt，定義角色、能力邊界、回應原則、禁止行為與輸出格式。"],
+  ["提示工程","專業","防越獄與防亂答","讓輸出更可控","情境：[情境]。請設計指令，要求 AI 不確定時說不知道、不編造、引用來源、超出範圍時拒答。"]
+];
+
+// AI 開發工作流（Claude Code / 解決失憶 / 跨會話記憶）＋ 各分類補強
+const more = [
+  // ── AI 開發工作流：核心是「讓 AI 不用每次重講背景」 ──
+  ["AI 開發工作流","基礎","產生 CLAUDE.md","一鍵生出專案記憶檔","請根據以下專案資訊產生一份精簡 CLAUDE.md（控制在 80-120 行）：[專案描述]。只寫會改變 AI 決策的內容：技術棧、目錄結構、啟動與測試指令、程式規範、命名慣例、禁止事項。不要寫程式碼能自己看出來的東西。"],
+  ["AI 開發工作流","基礎","專案背景速記","開新會話前先餵這段","這是我的專案：[一句話定位]。技術棧：[技術棧]。目前進度：[進度]。我的開發習慣：[習慣]。接下來要做：[任務]。請先複述你理解到的重點，再開始。"],
+  ["AI 開發工作流","基礎","解釋整個專案","接手陌生程式碼","請幫我快速理解這個專案：[貼上目錄結構或主要檔案]。請輸出：專案用途、核心模組、資料流、進入點、我該先看哪幾個檔案。"],
+  ["AI 開發工作流","基礎","解釋這段程式","看懂別人的 code","請逐段解釋這段程式在做什麼：[貼上程式]，標出可能的副作用、隱藏依賴、看不懂的語法，用我看得懂的方式說明。"],
+  ["AI 開發工作流","基礎","Commit 訊息","產生規範化 commit","請根據這次變更產生 commit 訊息：[貼上 diff 或描述]，用 Conventional Commits 格式（feat/fix/refactor…），標題簡短，內文說明動機與影響。"],
+  ["AI 開發工作流","基礎","環境設定整理","新機器能跑起來","請把這個專案的環境設定整理成清單：[貼上 package.json 或描述]，包含需要的版本、環境變數、安裝步驟、啟動指令、常見錯誤。"],
+  ["AI 開發工作流","基礎","TODO 抽取","把散落待辦集中","請掃描以下內容找出所有待辦與未完成項：[貼上程式或筆記]，整理成清單並依重要性排序，標出哪些會擋住上線。"],
+  ["AI 開發工作流","進階","會話交接筆記","下次會話直接接手","請把這次會話整理成交接筆記：[貼上對話重點]。輸出：已完成、進行中、待辦、重要決策與理由、踩過的雷、下次第一步該做什麼。寫成下一個 AI 或我自己都能直接接手的格式。"],
+  ["AI 開發工作流","進階","更新 CLAUDE.md","把新規範沉澱回專案","這是現有 CLAUDE.md：[貼上]。這次學到的新規範/決策：[貼上]。請輸出更新後版本，合併重複、刪掉過時、保持精簡，並標出改了哪幾行。"],
+  ["AI 開發工作流","進階","需求轉 PRD","口頭需求變規格","請把這個需求寫成精簡 PRD：[貼上需求]。輸出：目標、使用者故事、功能範圍、明確不做、驗收標準、邊界情況、未確認問題。"],
+  ["AI 開發工作流","進階","任務拆解","大任務切成可執行步驟","請把這個任務拆成可獨立完成、可驗收的步驟：[貼上任務]。每步標出輸入、產出、完成標準、依賴關係，並指出可以平行做的部分。"],
+  ["AI 開發工作流","進階","重構計畫","安全地改爛 code","請為這段程式設計重構計畫：[貼上程式]。先說明現在的問題，再給分批重構步驟，每批都能獨立驗證、不破壞行為，標出風險最高的一步。"],
+  ["AI 開發工作流","進階","動工前先問","避免 AI 亂寫","任務：[任務]。在開始寫程式前，請先問我所有會影響實作的問題（資料結構、邊界、權限、相依、預期行為），等我回答後再動手。不要先假設。"],
+  ["AI 開發工作流","進階","程式規範抽取","從現有 code 抽風格","請從這些檔案抽出實際使用的程式規範：[貼上程式]，包含命名、檔案結構、錯誤處理、註解風格、測試慣例，整理成可放進 CLAUDE.md 的條列。"],
+  ["AI 開發工作流","進階","測試補齊","幫沒測試的 code 補","請為這段程式設計測試：[貼上程式]，列出正常、邊界、錯誤輸入、權限案例，先給測試清單再給程式碼，標出最該優先測的。"],
+  ["AI 開發工作流","進階","目錄結構說明","讓 AI 秒懂專案佈局","請根據這個目錄結構產生說明：[貼上 tree]，每個資料夾一句話用途、進入點在哪、新功能該放哪、哪些不要碰。"],
+  ["AI 開發工作流","進階","Bug 重現步驟","把模糊問題講清楚","我遇到 bug：[描述現象]。請幫我整理成可重現報告：環境、步驟、預期、實際、相關 log，並列出我還需要補哪些資訊才好查。"],
+  ["AI 開發工作流","進階","PR 描述產生","讓審查者秒懂","請根據這次變更產生 PR 描述：[貼上 diff 或摘要]，包含改了什麼、為什麼、如何測試、風險、需要審查者特別看的地方。"],
+  ["AI 開發工作流","進階","依賴升級風險","升級套件前先評估","我要升級：[套件與版本]。請評估風險，列出 breaking changes、受影響的程式、需要改的地方、測試重點、可否分批升級。"],
+  ["AI 開發工作流","進階","Claude Code 任務指令","寫出讓 AI 一次到位的指令","我想叫 AI 做：[任務]。請幫我把它寫成一段結構清楚的指令：角色、目標、限制、不要做什麼、完成標準、輸出格式，讓 AI 不用來回問就能做對。"],
+  ["AI 開發工作流","專業","技術債盤點","系統性找出爛帳","請盤點這個專案的技術債：[貼上程式或描述]，分成架構、程式品質、測試、安全、文件，每項標出嚴重度、影響、修復成本，給優先處理順序。"],
+  ["AI 開發工作流","專業","架構決策紀錄 ADR","把重要決策寫下來","請把這個技術決策寫成 ADR：[決策內容]。輸出：背景與問題、考慮過的方案、最後選擇、理由、取捨、影響、之後若要推翻的條件。"],
+  ["AI 開發工作流","專業","跨會話進度沉澱","建立專案進度檔","請設計一份專案進度檔範本，能跨會話延續：[專案描述]。包含目標、里程碑、已完成、進行中、待辦、決策紀錄、已知問題，並說明每次會話結束該如何更新它。"],
+  ["AI 開發工作流","專業","防失憶工作流設計","建立一套記憶機制","我的痛點是 AI 每次開新會話都失憶：[專案情況]。請幫我設計一套 context 管理工作流，包含放哪些檔案、各檔案職責、每次會話開始與結束的固定動作、什麼該寫進長期記憶、什麼不該。"],
+  ["AI 開發工作流","專業","程式碼審查規範化","建立團隊 review 標準","請建立程式碼審查清單：[技術棧與專案]，分成正確性、安全、效能、可維護、測試、邊界，每項給具體判準，讓不同人 review 標準一致。"],
+  ["AI 開發工作流","專業","Onboarding 文件","新人/新 AI 都能上手","請為這個專案產生 onboarding 文件：[專案描述]，包含環境設定、架構總覽、開發流程、規範、常見任務怎麼做、找人問什麼，目標是半天能上手。"],
+  ["AI 開發工作流","專業","規格驗收清單","交付前對齊","功能：[功能]。請產出驗收清單，分成功能正確、邊界情況、錯誤處理、權限、效能、使用者體驗，每項可勾選、可驗證，避免做完才發現漏。"],
+  ["AI 開發工作流","專業","大型重構分批計畫","降低一次改爛風險","我要重構：[範圍]。請設計分批計畫，每批可獨立上線與回滾、有對應測試、不長時間鎖死分支，標出依賴順序與最高風險批次。"],
+  ["AI 開發工作流","專業","多人協作規範","減少互相踩線","團隊情況：[描述]。請設計協作規範，包含分支策略、commit 規範、review 規則、CLAUDE.md 維護責任、衝突處理、誰可以動哪些區域。"],
+  ["AI 開發工作流","專業","口頭需求轉 Spec","把模糊講清楚","老闆/客戶說：[貼上需求原話]。請翻譯成工程可執行 spec，標出哪些是明確需求、哪些是我推測、哪些需要回去確認，不要自己腦補成假需求。"],
+
+  // ── 各分類補強 ──
+  ["通用結構","基礎","比較表產生","快速做選擇","請把這幾個選項整理成比較表：[貼上選項]，欄位自行判斷重點，結論放最前面，標出最推薦哪個與原因。"],
+  ["通用結構","基礎","檢查清單","事情別漏做","請把這件事整理成檢查清單：[貼上內容]，分成前置、執行、收尾，每項可勾選，標出最容易漏的。"],
+  ["通用結構","進階","時間軸整理","把事件理清楚","請把以下內容整理成時間軸：[貼上內容]，標出關鍵節點、因果關係、目前在哪一步、下一步是什麼。"],
+  ["商業策略","進階","競品拆解","看懂對手在幹嘛","競品：[競品]。請拆解它的定位、目標客群、定價、賣點、弱點、它沒做但你能做的縫隙。"],
+  ["商業策略","進階","訂閱定價分層","設計方案級距","產品：[產品]。請設計訂閱定價分層，包含免費/付費級距、每層功能切法、升級誘因、避免互相蠶食。"],
+  ["商業策略","進階","流失分析","找出為何不續用","產品：[產品]，流失情況：[描述]。請分析流失原因、最可能的斷點、留存動作、低成本驗證方法。"],
+  ["商業策略","專業","合作提案","談合作前先想清楚","對象：[合作對象]。請幫我設計合作提案，包含對對方的價值、分潤或交換、風險、底線、談判順序與備案。"],
+  ["內容文案","進階","Threads 貼文（強中弱三語氣）","短、口語、有觀點，挑一篇直接發","主題：[主題]。請寫 3 版 Threads 貼文：強版（帶風向、立場鮮明）、中版（觀點分享）、弱版（輕鬆聊、生活感），各 3-5 行、口語、不要 AI 味，結尾各配一個互動鉤子（問句／反問／留白），並標出每版適合的時機。寫作要求：像真人隨手打的——句子長短不一、可口語、不必每段收尾；禁用「在這個…的時代」「值得一提的是」「總而言之」這類模板句；不要整齊排比，emoji 最多 1 個。寧可有點不完美，不要太工整。"],
+  ["內容文案","進階","FB 貼文（強中弱三語氣）","一次三版，標明適用時機","主題：[主題]，受眾：[對象]，目的：[目的]。請寫 3 版 FB 貼文：強版（明確促購促行動）、中版（價值與行動並重）、弱版（軟性分享、建立信任），各 150-250 字、分段好讀、各附合適的結尾 CTA，並標出每版適合的時機。寫作要求：像真人隨手打的——句子長短不一、可口語、不必每段收尾；禁用「在這個…的時代」「值得一提的是」「總而言之」這類模板句；不要整齊排比，emoji 最多 1 個。寧可有點不完美，不要太工整。"],
+  ["內容文案","進階","IG 貼文（強中弱三語氣）","含 hashtag 與折疊前鉤子","主題：[主題]，受眾：[對象]。請寫 3 版 IG 文案：強促動／中平衡／弱軟性，各 100 字內、前兩行要抓住人（折疊前可見）、各附 8-12 個 hashtag 與結尾 CTA，標出適合時機。寫作要求：像真人隨手打的——句子長短不一、可口語、不必每段收尾；禁用「在這個…的時代」「值得一提的是」「總而言之」這類模板句；不要整齊排比，emoji 最多 1 個。寧可有點不完美，不要太工整。"],
+  ["內容文案","進階","X 貼文（強中弱三語氣）","極短、可串文","主題：[主題]。請寫 3 版 X 貼文：強觀點／中資訊／弱幽默，各 140 字內、第一句即重點；另外給一版 3 則串文結構（鉤子→展開→收尾 CTA）。寫作要求：像真人隨手打的——句子長短不一、可口語、不必每段收尾；禁用「在這個…的時代」「值得一提的是」「總而言之」這類模板句；不要整齊排比，emoji 最多 1 個。寧可有點不完美，不要太工整。"],
+  ["內容文案","進階","部落格文章全文","從標題直接寫到結尾","主題：[主題]，關鍵字：[關鍵字]，受眾：[對象]，字數：[約幾字]，語氣：[專業/口語/故事感]。請直接寫出整篇部落格文章：標題給 3 選 1、開頭點出讀者問題、小標題分段、結尾總結＋CTA。寫作要求：像真人隨手打的——句子長短不一、可口語、不必每段收尾；禁用「在這個…的時代」「值得一提的是」「總而言之」這類模板句；不要整齊排比，emoji 最多 1 個。寧可有點不完美，不要太工整。"],
+  ["內容文案","進階","IG 圖文企劃","輪播貼文規劃","主題：[主題]。請規劃 IG 輪播圖文，包含封面鉤子、每張重點、文案、Hashtag、CTA，共 6-8 張。"],
+  ["內容文案","進階","電子報","打開率與點擊","主題：[主題]，受眾：[受眾]。請寫電子報，包含吸睛主旨行 5 個、開頭鉤子、主體、單一明確 CTA。"],
+  ["內容文案","基礎","產品命名","取名字找方向","產品：[產品描述]。請提供 20 個命名方向，分成描述型、情感型、隱喻型、生造詞，各附一句理由與聯想風險。"],
+  ["資料分析","基礎","Excel 公式生成","不會寫公式時","我想在 Excel 做到：[需求描述]，資料長這樣：[欄位]。請給我公式、解釋每段意思、可能出錯的情況與替代寫法。"],
+  ["資料分析","進階","報表結論化","數字變行動","這是報表數據：[貼上]。請不要只重述數字，輸出 3 個關鍵結論、異常、可能原因、建議行動與要再追的問題。"],
+  ["程式開發","基礎","正則表達式","產生並解釋 regex","我要比對：[描述需求並給範例]。請給正則表達式、逐段解釋、會誤抓的情況、各語言寫法差異。"],
+  ["程式開發","進階","Git 衝突處理","解 conflict 不慌","我遇到 merge conflict：[貼上衝突區塊]。請說明兩邊各想做什麼、建議怎麼合、合完要驗證什麼、怎麼避免下次再衝。"],
+  ["程式開發","專業","效能分析","找出慢在哪","情況：[描述慢的現象]，相關程式：[貼上]。請列出最可能的瓶頸排序、怎麼量測、優化方向、不要過早優化的部分。"],
+  ["程式開發","進階","API 文件產生","讓別人會用","請為這個 API 產生文件：[貼上路由或程式]，包含用途、參數、回應、status code、錯誤、範例請求，格式清楚可直接給前端。"],
+  ["學習整理","基礎","費曼法檢查","用講的確認懂沒","概念：[概念]。請要求我用最白話講一遍，再指出我哪裡其實沒講清楚、哪裡用了我自己也不懂的詞、補哪個例子會更懂。"],
+  ["學習整理","進階","概念對比","分清楚易混淆","請對比這幾個容易混淆的概念：[A vs B vs C]，用表格列出定義、差別、各自適用情境、最常見的誤用。"],
+  ["學習整理","進階","考前重點","快速複習","主題範圍：[範圍]。請整理考前重點，分成必考核心、易錯、公式/定義、一句話記憶法，並出 5 題自我檢測。"],
+  ["改寫潤稿","基礎","標題改寫","讓人想點","原標題：[貼上]。請改 10 個版本，分成直接、好奇、痛點、利益、數字型，標出哪個最不像 AI、最可能被點。"],
+  ["改寫潤稿","進階","留言/客訴回覆","公開場合得體","對方說：[貼上]。請寫公開回覆，要得體、有界線、不卑不亢、不引戰，必要時給 2 版（溫和版、堅定版）。"],
+  ["改寫潤稿","進階","道歉信","真誠但不過度","情況：[描述]。請寫道歉訊息，承認問題、不找藉口、說明補救、給後續承諾，語氣真誠但不卑微、不過度自責。"],
+  ["提示工程","進階","拆解大任務","一個 prompt 做不完時","我想叫 AI 完成：[大任務]。請幫我拆成多個小 prompt，標出每步的輸入輸出與順序，讓我可以分階段餵、品質更穩。"],
+  ["提示工程","進階","思維鏈引導","逼 AI 想清楚再答","問題：[問題]。請設計一段 prompt，要求 AI 先列推理步驟、檢查假設、考慮反例，最後才下結論，不要一步跳到答案。"],
+  ["提示工程","專業","自我批改指令","讓 AI 自己抓錯","任務：[任務]。請設計指令讓 AI 產出後自我審查：對照需求逐項檢查、找出最弱的部分、列出不確定處，只交付修正後版本。"],
+  ["提示工程","專業","完工後雙角色自評","逼 AI 自己招出缺點並改掉","你剛完成了：[描述成果與原本目標]。請做兩輪自評：第一輪以「設計者」身分打分（0-100），對照目標逐項檢查哪些達標、哪些沒達到，說明扣分原因；第二輪切換成「第一次使用的使用者」身分再打一次分，誠實說會不會想用、用三次之後最煩的地方是什麼。最後把兩輪找出的缺點整理成優先順序清單，標出哪些現在就能改，並直接改掉第一項。不准客套，分數要敢給低。"],
+  ["視覺設計","基礎","配色方案","快速給色票","用途與調性：[描述]。請給 3 組配色方案，每組附主色、輔色、強調色的色碼、適用情境、情緒聯想與禁忌。"],
+  ["視覺設計","基礎","字體搭配","選字不踩雷","品牌調性：[描述]。請建議 2-3 組中英文字體搭配，說明標題/內文用法、可讀性、氣質、可免費商用的選項。"],
+  ["視覺設計","進階","簡報視覺方向","讓投影片不土","主題與場合：[描述]。請給簡報視覺方向，包含版面原則、配色、字級層級、圖表風格、每頁重點數量上限、避免的老派做法。"],
+  ["工作流","基礎","週報產生","把雜事變成果","這週做的事：[貼上]。請整理成週報，分成完成成果（講結果不講過程）、進行中、卡關需協助、下週重點。"],
+  ["工作流","基礎","會議議程","開會不離題","會議目的：[目的]，與會者：[人]。請設計議程，含每段時間、要做的決策、需準備什麼、結束前要產出什麼。"],
+  ["工作流","進階","決策紀錄","事後不爭吵","決策：[內容]。請寫決策紀錄，含背景、選項、最後決定、理由、負責人、複查時間，讓之後不用重新吵一次。"],
+  ["AI 圖片","基礎","負面提示詞","排除不要的元素","我在生成：[描述目標圖]。請給對應的 negative prompt，列出該排除的常見問題（變形、多手指、雜物、浮水印、低畫質等）並說明原因。"],
+  ["AI 圖片","進階","風格遷移","換風格但保主體","原圖：[describe]，想換成：[目標風格]。請寫 prompt，保留主體與構圖，只換質感/色調/筆觸，並列出要鎖住不變的元素。"]
+];
+
+// 補充：社群文案、AI 圖片、影片、辦公軟體（Excel/Word/PPT）
+const more2 = [
+  ["內容文案","基礎","限時動態文案","IG/FB 限動","平台：[IG/FB]，主題：[主題]。請寫 3 則限動文案，短、口語、有互動鉤子（問句或投票），各附一個行動引導。"],
+  ["內容文案","基礎","貼文 Hashtag","產生標籤組","貼文主題：[主題]，受眾：[受眾]。請給 3 組 hashtag（大、中、小流量各一組），每組 8-12 個，並說明使用時機。"],
+  ["內容文案","進階","一稿多平台改寫","同內容多發","原貼文：[貼上]。請改寫成 Threads、IG、FB、LinkedIn 四種版本，各自符合平台語氣與長度。"],
+  ["內容文案","進階","留言互動回覆","小編回覆","留言：[貼上]，品牌語氣：[語氣]。請給 3 種回覆（感謝型、引導型、幽默型），自然不罐頭。"],
+  ["內容文案","基礎","節慶時事貼文","應景但不硬蹭","主題或節日：[主題]，品牌：[品牌]。請寫 2 版應景貼文，連結到品牌但不尷尬硬蹭。"],
+  ["內容文案","進階","短影音文案鉤子","前 3 秒留人","主題：[主題]。請給 10 個短影音開場鉤子（前 3 秒台詞），分成痛點、好奇、反差、數字型。"],
+  ["內容文案","進階","KOL 合作邀約","私訊或 Email","對象：[KOL]，產品：[產品]，條件：[預算或交換]。請寫合作邀約訊息，誠懇、具體、給對方好處，不像群發。"],
+  ["內容文案","專業","社群內容月曆","一個月排程","品牌：[品牌]，目標：[目標]。請規劃一個月社群內容月曆，含每週主題、貼文類型、發文頻率、CTA 分布。"],
+  ["內容文案","進階","CTA 行動呼籲設計","不只給句子，還告訴你為什麼","產品或內容：[描述]，目的：[購買/報名/諮詢/追蹤]，受眾：[誰]，出現位置：[文末/按鈕/彈窗]。請給 12 個 CTA 文案，分四型（直接型、利益型、急迫型、低門檻型），每個標註適用情境；依我的情境推薦最適合的 1-2 個並說明理由；最後給按鈕設計重點（顏色對比、尺寸、手機好點、出現位置）。"],
+
+  ["影片","基礎","短影音腳本","Reels/TikTok/Shorts","主題：[主題]，長度：[秒數]。請寫腳本，含開場鉤子、分鏡（畫面＋旁白）、節奏提示、結尾 CTA。"],
+  ["影片","基礎","YouTube 影片大綱","長片規劃","主題：[主題]，受眾：[受眾]。請給影片大綱：標題 5 個、開場、章節重點、結尾，並標出可放 B-roll 的點。"],
+  ["影片","進階","AI 生成影片 Prompt","Veo/Runway/Kling 用","畫面想法：[描述]。請寫成英文影片生成 prompt，含主體、動作、鏡頭運動、光線、氛圍、時長，並附 negative 提示。"],
+  ["影片","進階","分鏡腳本表","拍攝用","腳本：[貼上]。請整理成分鏡表：鏡號、畫面內容、運鏡、秒數、旁白／字幕、備註。"],
+  ["影片","基礎","字幕逐字稿潤飾","上字幕用","逐字稿：[貼上]。請斷句成適合上字幕的短句，修掉口語贅字，保留原意與語氣。"],
+  ["影片","進階","影片標題與縮圖","提高點擊","影片主題：[主題]。請給 10 個標題（好奇／痛點／數字／反差）＋ 5 句縮圖短標（4-6 字），標出最可能被點的。"],
+  ["影片","基礎","旁白口白稿","配音用","內容重點：[貼上]，語氣：[語氣]，長度：[秒數]。請寫口白稿，口語、好唸、有節奏，標出停頓。"],
+  ["影片","進階","長影片轉衍生內容","一片多用","原影片重點：[貼上]。請規劃如何剪成：60 秒精華、15 秒鉤子、圖文懶人包三種衍生內容。"],
+
+  ["辦公軟體","基礎","Excel 公式產生","不會寫公式","我想在 Excel 做到：[需求]，資料欄位：[欄位]。請給公式、逐段解釋、可能出錯情況與替代寫法。"],
+  ["辦公軟體","進階","Excel 函數除錯","公式報錯","公式：[貼上]，錯誤或結果：[描述]。請找出問題、給修正版、解釋原因，並提醒常見陷阱。"],
+  ["辦公軟體","進階","樞紐分析規劃","報表怎麼擺","資料欄位：[欄位]，想回答：[問題]。請建議樞紐的列／欄／值／篩選怎麼放、看哪些指標、陷阱。"],
+  ["辦公軟體","基礎","資料清理步驟","髒資料整理","資料狀況：[描述問題]。請給 Excel 清理步驟（去重、補空、統一格式、拆欄），標出該用哪個功能或公式。"],
+  ["辦公軟體","專業","Excel VBA 巨集","自動化","想自動化的動作：[描述]。請寫 Excel VBA 巨集，加註解、使用方式、注意事項，並提醒先備份。"],
+  ["辦公軟體","進階","圖表選擇建議","用對圖","資料與想表達：[描述]。請建議最適合的圖表類型、為什麼、要避免的圖、版面與配色重點。"],
+  ["辦公軟體","基礎","Google Sheets 公式","試算表","需求：[需求]，欄位：[欄位]。請給 Google Sheets 公式（含 ARRAYFORMULA／QUERY 等），解釋並給範例。"],
+  ["辦公軟體","基礎","Word 排版建議","版面整齊","文件用途：[用途]。請給 Word 排版建議：樣式、標題層級、間距、頁首頁尾、目錄，讓它專業一致。"],
+  ["辦公軟體","進階","Word 合併列印","大量寄送","情境：[例如通知／標籤]，資料來源：[Excel 欄位]。請說明 Word 合併列印步驟與欄位對應，並提醒常見錯誤。"],
+  ["辦公軟體","基礎","正式信件公文","格式正確","目的：[目的]，對象：[對象]。請寫正式信件／公文，格式正確、語氣得體、重點清楚，附主旨與結語。"],
+  ["辦公軟體","進階","長文校稿","抓錯字病句","文件：[貼上]。請校對錯字、標點、語病、前後不一致，列出修改處與原因，不改變原意。"],
+  ["辦公軟體","基礎","PPT 簡報大綱","先有架構","主題：[主題]，時長：[分鐘]，受眾：[受眾]。請給投影片大綱：每頁標題＋一句重點，控制頁數，標出開場與收尾。"],
+  ["辦公軟體","進階","PPT 單頁內容","把一頁寫好","這頁要講：[重點]。請給標題、3-5 條要點（精簡不整段）、一個數據或例子、講者備註。"],
+  ["辦公軟體","進階","PPT 視覺方向","不要老派","主題與場合：[描述]。請給視覺方向：版面原則、配色、字級層級、圖表風格、每頁重點上限、避免的老派做法。"],
+  ["辦公軟體","基礎","PPT 講者備註","上台不卡","投影片重點：[貼上]。請寫講者備註，口語、有過場、控制每頁時間，標出強調處。"],
+  ["辦公軟體","專業","PPT 精簡化","刪到剩重點","現有簡報內容：[貼上]。請精簡：合併重複、刪冗字、一頁一重點、把整段變要點，並指出可刪的頁。"],
+
+  ["AI 圖片","基礎","社群貼文配圖","IG/FB 視覺","貼文主題：[主題]，品牌調性：[調性]。請寫配圖 prompt，含主體、風格、色調、構圖、留白給文字、比例。"],
+  ["AI 圖片","基礎","縮圖封面圖","YT／部落格封面","主題：[主題]。請寫封面圖 prompt，主視覺明確、留標題空間、對比強、縮小也看得懂。"],
+  ["AI 圖片","進階","資訊圖表風格","懶人包視覺","主題：[主題]。請給資訊圖 prompt 與版面建議：標題區、重點區塊、icon 風格、配色、留白。"],
+  ["AI 圖片","進階","去背商品圖","電商用","商品：[商品]。請寫 prompt 產生乾淨純色或去背商品圖，含打光、角度、陰影、材質、比例。"],
+  ["AI 圖片","基礎","圖片風格轉換","換風格保主體","原圖：[描述]，目標風格：[風格]。請寫 prompt，保留主體與構圖，只換質感／色調／筆觸，列出要鎖住不變的。"]
+];
+
+/* ---------- 組裝 ---------- */
+const prompts = []
+  .concat(detailed.map(([category,level,title,desc,prompt])=>({category,level,title,desc,prompt})))
+  .concat(compact.map(([category,level,title,desc,prompt])=>({category,level,title,desc,prompt})))
+  .concat(more.map(([category,level,title,desc,prompt])=>({category,level,title,desc,prompt})))
+  .concat(more2.map(([category,level,title,desc,prompt])=>({category,level,title,desc,prompt})));
+// 重新分類：統一依「領域」分（合併產出型態與工具型分類）
+const CAT_MAP={"通用結構":"通用・提示技巧","提示工程":"通用・提示技巧","商業策略":"商業・策略","內容文案":"文字・內容","改寫潤稿":"文字・內容","視覺設計":"設計・影音","AI 圖片":"設計・影音","影片":"設計・影音","資料分析":"數據・文書","辦公軟體":"數據・文書","程式開發":"開發・技術","AI 開發工作流":"開發・技術","工作流":"流程・營運","學習整理":"學習・思考"};
+prompts.forEach(p=>{p.category=CAT_MAP[p.category]||p.category;});
+prompts.forEach(p=>{p.id=p.category+"|"+p.title;});
+let APP_DATA={taskPacks:[]};
+try{APP_DATA=JSON.parse(document.getElementById("workflowJson").textContent);}catch(e){}
+
+/* ---------- 各分類建議模型（依任務強項分工，2026/06 現況） ---------- */
+const modelByCat={
+  "通用・提示技巧":["Claude","結構化、指令遵循穩定"],
+  "商業・策略":["Claude","決策分析、壓力測試需要深度推理"],
+  "文字・內容":["ChatGPT","發想快、一次多版本、文筆順；深度長文給 Claude"],
+  "設計・影音":["ChatGPT","看圖發想與生圖、影片腳本；多模態 Gemini 也行"],
+  "數據・文書":["Claude","Excel 邏輯、資料分析做乾淨；接 Google Sheets 用 Gemini"],
+  "開發・技術":["Claude","長任務、寫真的會跑的 code、agent 是強項"],
+  "流程・營運":["Claude","流程設計用 Claude；接 Gmail/Docs 自動化用 Gemini"],
+  "學習・思考":["ChatGPT","解釋清楚、互動式教學；長文獻給 Claude"]
+};
+function modelOf(cat){return (modelByCat[cat]||["Claude",""]);}
+
+/* ---------- AI 名詞速查（七面向，照懶人包格式） ---------- */
+const glossary=[
+{term:"RAG",full:"檢索增強生成",one:"RAG 是讓 AI 先去查資料，再根據查到的資料回答問題。",agent:"讓 Agent 不只靠記憶，而是能去公司文件、知識庫、資料庫裡找答案。",without:"AI 容易憑印象亂講，尤其是公司內部資料、最新規則、合約條款。",analogy:"像店員回答客人前，先翻一下店內 SOP，而不是憑感覺亂說。",company:"客服 Agent 回答退貨規則前，先查公司最新退貨政策，再產生回覆。",mistake:"不是把 PDF 丟給 AI 就好，真正的 RAG 還包含切資料、建索引、搜尋、挑資料、再回答。",enough:"先懂這條流程：文件 → 切小段 → 轉成可搜尋格式 → 查出相關內容 → 丟給 AI 回答。"},
+{term:"Embedding",full:"向量嵌入",one:"Embedding 是把文字變成一串數字，讓電腦可以理解文字之間的相似度。",agent:"讓 Agent 可以做語意搜尋，不只找一模一樣的字，而是找意思相近的內容。",without:"Agent 只能用關鍵字搜尋，容易找不到真正相關的資料。",analogy:"像你聽到「我想退貨」和「我買錯了想換掉」，雖然字不同，但你知道意思接近。",company:"客戶問「我買錯尺寸怎麼辦？」Agent 也能找到文件裡的「換貨政策」。",mistake:"它不是翻譯，不是把中文翻成英文，而是把文字轉成 AI 容易比較的數字位置。",enough:"知道它的功能是「幫 AI 找意思相近的資料」就很夠，不用先懂數學公式。"},
+{term:"Vector Database",full:"向量資料庫",one:"Vector Database 是專門存放 Embedding，並快速找出相似內容的資料庫。",agent:"它是 RAG 系統裡的重要搜尋倉庫，幫 Agent 從大量文件中找出最相關的片段。",without:"資料一多，Agent 很難快速找到真正相關的內容。",analogy:"像一間用「意思」分類的圖書館，不是只靠書名或關鍵字找書。",company:"公司有 3,000 份產品文件，Agent 回答規格問題時，就能找出最相關的幾段。",mistake:"它不會自己理解所有資料，主要負責「找相似內容」，真正回答還是交給 AI 模型。",enough:"懂它是「語意搜尋用的資料庫」即可，常見概念：向量、相似度、索引、Top-K 搜尋。"},
+{term:"Chunking",full:"文件切塊",one:"Chunking 是把長文件切成一小段一小段，方便 AI 搜尋和閱讀。",agent:"它影響查資料準確度，切太大會吃太多雜訊，切太小可能失去上下文。",without:"整份文件太長，AI 不容易抓重點，也可能找不到正確答案。",analogy:"像把一整條法棍切成小片，才方便吃；整條塞進嘴裡會噎到。",company:"把 100 頁員工手冊切成很多小段，Agent 才能分別查請假規則、報銷流程、遠端工作。",mistake:"不是切越細越好。切太細，AI 可能只看到半句話，反而誤解意思。",enough:"先懂三件事：切多大、段落之間要不要重疊、每段要不要保留標題與來源。"},
+{term:"Semantic Search",full:"語意搜尋",one:"Semantic Search 是用「意思」搜尋，而不是只用字面關鍵字搜尋。",agent:"它讓 Agent 可以更像人一樣找資料，理解使用者真正想問什麼。",without:"只要使用者換個說法，Agent 就可能找不到資料。",analogy:"你問店員「有沒有不會太甜的飲料？」店員知道你可能在找無糖、微糖或茶類。",company:"員工問「出差花自己的錢怎麼請款？」Agent 也能找到「費用報銷流程」。",mistake:"它不是百分百準，只是更聰明的搜尋，還是可能找錯，需要評估和調整。",enough:"懂它適合用在文件搜尋、客服知識庫、內部 FAQ、合約條款查找即可。"},
+{term:"Context Window",full:"上下文視窗",one:"Context Window 是 AI 一次能讀進腦袋裡的文字容量上限。",agent:"它限制 Agent 一次能看多少文件、多少聊天紀錄、多少工具結果。",without:"以為 AI 能無限讀資料，就會把太多東西塞進去，導致成本高、速度慢、重點混亂。",analogy:"像人的工作桌。桌面再大也有限，一次堆太多文件，反而找不到重點。",company:"法律 Agent 不能每次都把 500 頁合約全塞給 AI，而是要先挑出最相關的條款。",mistake:"以為「超長上下文」就能解決一切。資料放太多，AI 仍可能忽略重點，也會增加成本。",enough:"懂「不能什麼都塞給 AI」，要學會摘要、檢索、挑重點、分段處理。"},
+{term:"AI Agent",full:"AI 代理",one:"AI Agent 是會自己規劃步驟、呼叫工具、完成任務的 AI，不只是聊天回答。",agent:"它是整套系統的大腦，負責決定「下一步做什麼、要用哪個工具」。",without:"沒有 Agent，AI 只能一問一答，不能自己查資料、串流程、完成多步任務。",analogy:"像一個會自己查資料、打電話、跑流程的助理，而不是只會回你問題的同事。",company:"客服 Agent 收到問題後，自己去查政策、算金額、產生回覆，整串自動完成。",mistake:"不是給它一個 prompt 就叫 Agent。Agent 要能用工具、多步驟、依結果決定下一步。",enough:"先懂它 = LLM ＋ 工具 ＋ 記憶 ＋ 會自己決定步驟，這四件事湊起來。"},
+{term:"LLM",full:"大型語言模型",one:"LLM 是看過大量文字、學會「預測下一個字」的 AI 模型，是對話 AI 的核心。",agent:"它是 Agent 的大腦，負責理解問題、推理、產生文字。",without:"沒有 LLM，就沒有理解語言、產生回答的能力，整個 Agent 動不了。",analogy:"像一個讀過超多書、很會接話的人，但他不一定知道你公司的事（要靠 RAG 補）。",company:"ChatGPT、Claude、Gemini 背後都是 LLM；Agent 用它來理解與回覆。",mistake:"以為 LLM 什麼都知道、且永遠正確。它會過時、會幻覺，需要 RAG 與驗證補強。",enough:"懂它是「會預測文字的大腦」、強但會出錯，要搭配資料與檢查即可。"},
+{term:"Token",full:"詞元",one:"Token 是 AI 處理文字的最小單位，一段字會被拆成幾個 token。",agent:"它決定成本與長度，Agent 讀越多、回越多，花的 token 越多、越貴。",without:"不懂 token，就抓不準成本，也算不出 Context Window 會不會爆。",analogy:"像計程車的「跳表單位」，不是按字數，是按 token 數在算錢。",company:"把 500 頁合約全餵給 AI，token 暴增、帳單變高，所以才要先檢索挑重點。",mistake:"以為 1 個字 = 1 token。中文常常 1 字 = 1～2 token，英文一個詞可能拆成多個。",enough:"懂「token = 計費與長度單位、越多越貴越慢」就夠用。"},
+{term:"Hallucination",full:"幻覺",one:"Hallucination 是 AI 一本正經講出聽起來合理、其實是錯或捏造的內容。",agent:"它是 Agent 最大的風險，尤其在回答公司政策、數字、法規時。",without:"不防幻覺，Agent 會自信地給錯答案，讓人誤信。",analogy:"像一個很會講話的人，不知道答案時也不說「我不知道」，而是硬掰一個。",company:"客服 Agent 亂講退貨天數、亂報價格，可能造成客訴或損失。",mistake:"以為換更強的模型就不會幻覺。再強也會，要靠 RAG、附來源、要求不確定就說不知道。",enough:"懂「AI 會自信亂講」，重要答案要給它資料、要它附來源、要驗證。"},
+{term:"Fine-tuning",full:"微調",one:"Fine-tuning 是用你自己的資料再訓練模型，讓它更懂你的領域或風格。",agent:"它讓 Agent 在特定任務上更穩、更像你要的口吻，但不是用來塞最新知識。",without:"沒微調也能用（靠 prompt ＋ RAG）；多數情況不需要先跳到微調。",analogy:"像把一個通才員工送去專業訓練，讓他更懂你這行的規矩與說法。",company:"想讓 AI 永遠用品牌語氣、處理特定格式時，才考慮微調。",mistake:"把微調當成「教它最新資料」。最新、會變的資料該用 RAG，不是微調。",enough:"懂「微調改風格/能力、RAG 補最新知識」這個分工就夠，多數人先用 RAG。"},
+{term:"Prompt",full:"提示詞",one:"Prompt 是你給 AI 的指令，講清楚角色、目標、背景、限制、輸出格式。",agent:"它是 Agent 行為的起點，prompt 寫得好不好直接決定結果品質。",without:"沒寫清楚，AI 只能猜，結果常常離題或太空泛。",analogy:"像交辦工作給同事，講越清楚（要什麼、給誰、什麼格式），他做得越對。",company:"同一個 Agent，prompt 寫法不同，客服回覆品質差很多。",mistake:"以為 prompt 要寫很長。重點不是長，是把關鍵講清楚。",enough:"懂萬用公式：角色＋目標＋背景＋素材＋限制＋輸出格式＋先給結論（這工具就在做這件事）。"},
+{term:"MCP",full:"模型上下文協定",one:"MCP 是一套標準，讓 AI 用統一方式連到外部工具與資料（像 USB 接口）。",agent:"它讓 Agent 能接 Slack、資料庫、檔案、API…而不用每個都另寫一套接法。",without:"每接一個工具都要客製，整合又亂又難維護。",analogy:"像 USB-C，統一接口後，什麼裝置都能插上同一個孔。",company:"想讓 Agent 一次接公司的 Slack、Google Drive、資料庫，用 MCP 比較省事。",mistake:"以為 MCP 是某個產品。它是「協定/標準」，是讓工具互通的規格。",enough:"懂它是「AI 接外部工具的統一接口」即可。"},
+{term:"Function Calling",full:"工具呼叫",one:"Function Calling 是讓 AI 在需要時，自己呼叫外部工具或程式來完成任務。",agent:"它是 Agent 能「動手做事」的關鍵，不只是講，而是去查、去算、去寫入。",without:"沒有它，AI 只能輸出文字，不能查即時資料、不能真正執行動作。",analogy:"像店員發現自己不知道庫存，於是拿起電話打去倉庫問，而不是用猜的。",company:"訂單 Agent 自己呼叫查庫存 API、算運費、建立訂單，串成一條龍。",mistake:"以為 AI 自己會上網或操作。要先給它「可呼叫的工具」，它才能用。",enough:"懂「AI 會在對的時機呼叫對的工具」就夠。"},
+{term:"Temperature",full:"溫度參數",one:"Temperature 是控制 AI 回答「多保守或多有創意」的參數。",agent:"它影響 Agent 輸出的穩定度，越低越固定、越高越發散。",without:"不調它，可能該嚴謹時太發散、該創意時太死板。",analogy:"像水龍頭，開小一點答案穩定、開大一點答案花俏但容易跑題。",company:"客服、法規回答用低 temperature（要穩）；發想文案用高一點（要點子）。",mistake:"以為調高就是更聰明。高只是更隨機，不是更準。",enough:"懂「低 = 穩定一致、高 = 有創意但易亂」，看任務調即可。"},
+{term:"Agent Orchestration",full:"多代理協作",one:"Agent Orchestration 是讓多個 Agent 分工合作、互相傳遞結果，完成複雜任務。",agent:"它是「總指揮」，決定哪個子 Agent 做哪一段、結果怎麼串。",without:"單一 Agent 包山包海，複雜任務容易亂、容易錯。",analogy:"像一個專案經理帶一組各有專長的人，分派工作再把成果整合。",company:"一個查資料、一個算數字、一個寫回覆，由總指揮串起來完成客訴處理。",mistake:"以為 Agent 越多越好。協作越多越難管、越貴，先確認真的需要再拆。",enough:"懂「複雜任務可由多個專責 Agent 分工，需要一個協調者」即可。"},
+{term:"Planner / Executor",full:"規劃者／執行者",one:"Planner 是負責規劃的人，Executor 是負責執行的人。",agent:"有些 Agent 會先規劃步驟，再一步一步執行，避免想到什麼做什麼。",without:"Agent 容易直接衝去做，沒先想清楚任務順序和風險。",analogy:"像開店前，店長先排今天工作：誰補貨、誰顧櫃台、誰點庫存；店員再照著做。",company:"使用者說「幫我整理本週銷售狀況並寄給主管」。Planner 先拆任務，Executor 再逐步完成。",mistake:"不是越自由越厲害。很多企業 Agent 需要明確規劃和受控執行，不能亂跑。",enough:"懂「先規劃，再執行，再檢查」這個模式即可。"},
+{term:"Memory",full:"記憶",one:"Memory 是讓 Agent 記住過去資訊的能力。",agent:"它讓 Agent 記得使用者偏好、任務進度、歷史互動、重要紀錄。",without:"Agent 每次都像第一次見面，不知道之前發生過什麼。",analogy:"像熟客走進咖啡店，店員知道你平常喝冰美式少冰，不用每次重問。",company:"業務 Agent 記得某客戶上次說預算不夠，這次追蹤時就不會從零開始問。",mistake:"聊天紀錄不等於 Memory。真正的 Memory 需要整理、篩選、更新，不是什麼都永久記住。",enough:"懂短期記憶、長期記憶、任務狀態、使用者偏好、隱私限制即可。"},
+{term:"Guardrails",full:"安全護欄",one:"Guardrails 是給 AI 的安全護欄，限制它什麼可以做、什麼不能做。",agent:"它防止 Agent 亂回答、亂操作、碰敏感資料、做超出權限的事。",without:"Agent 可能寄錯信、看錯資料、給錯建議，甚至做出高風險操作。",analogy:"像兒童遊樂場旁邊的欄杆，不是阻止你玩，而是避免你摔下去。",company:"財務 Agent 可以整理報表，但不能自行匯款；退款超過 3,000 元必須轉人工審核。",mistake:"它不只是內容審查，也包含權限、格式、流程、審核、風險控制。",enough:"會問這些就夠：可以看什麼？可以改什麼？哪些動作要人工確認？出錯怎麼停下來？"}
+];
+
+/* ---------- 收藏（localStorage，file:// 也可用） ---------- */
+const FAV_KEY="prompt_favs_v1";
+let favs=new Set();
+try{favs=new Set(JSON.parse(localStorage.getItem(FAV_KEY)||"[]"));}catch(e){}
+function saveFavs(){try{localStorage.setItem(FAV_KEY,JSON.stringify([...favs]));}catch(e){}}
+
+/* ---------- 最近使用 ---------- */
+const REC_KEY="prompt_recent_v1";
+let recent=[];
+try{recent=JSON.parse(localStorage.getItem(REC_KEY)||"[]");}catch(e){}
+const __ids=new Set(prompts.map(p=>p.id));
+recent=recent.filter(id=>__ids.has(id));
+favs=new Set([...favs].filter(id=>__ids.has(id)));
+const CNT_KEY="prompt_counts_v1";
+let counts={};
+try{counts=JSON.parse(localStorage.getItem(CNT_KEY)||"{}");}catch(e){}
+function recordUse(id){
+  recent=[id].concat(recent.filter(x=>x!==id)).slice(0,30);
+  counts[id]=(counts[id]||0)+1;
+  try{localStorage.setItem(REC_KEY,JSON.stringify(recent));localStorage.setItem(CNT_KEY,JSON.stringify(counts));}catch(e){}
+  updateRecCount();renderQuickbar();
+}
+const PICKS=["通用・提示技巧|萬用任務提示","通用・提示技巧|幫我優化 Prompt","文字・內容|FB 貼文（強中弱三語氣）","文字・內容|Threads 貼文（強中弱三語氣）","文字・內容|反模板改寫","設計・影音|社群貼文配圖","設計・影音|短影音腳本","數據・文書|Excel 公式產生","開發・技術|產生 CLAUDE.md","商業・策略|決策備忘錄","流程・營運|SOP 產生器","數據・文書|資料摘要"];
+function renderQuickbar(){
+  const bar=document.getElementById("qbar");if(!bar)return;
+  const usageTop=Object.entries(counts).filter(([id,c])=>c>=2&&__ids.has(id))
+    .sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id])=>id);
+  let ids,label;
+  if(usageTop.length>=3){ids=usageTop;label="⭐ 常用";}
+  else{ids=PICKS.filter(id=>__ids.has(id)).slice(0,8);label="✨ 先從這些開始";}
+  bar.innerHTML="";
+  if(!ids.length){bar.classList.remove("show");return;}
+  bar.classList.add("show");
+  const lb=document.createElement("span");lb.className="qlabel";lb.textContent=label;bar.appendChild(lb);
+  ids.forEach(id=>{
+    const p=prompts.find(x=>x.id===id);if(!p)return;
+    const b=document.createElement("button");b.className="qchip";b.type="button";b.textContent=p.title;b.title="打開卡片，先看再填";
+    b.onclick=()=>openPrompt(id,true);
+    bar.appendChild(b);
+  });
+}
+const TASKS=[["✍️ 寫內容","文字・內容"],["🎨 圖・影音","設計・影音"],["📊 數據文書","數據・文書"],["💻 寫程式","開發・技術"],["🧭 想策略","商業・策略"],["🔁 建流程","流程・營運"],["📚 學東西","學習・思考"],["⚡ 寫好指令","通用・提示技巧"]];
+function renderTaskbar(){
+  const el=document.getElementById("taskbar");if(!el)return;el.innerHTML="";
+  TASKS.forEach(([label,cat])=>{
+    const b=document.createElement("button");b.type="button";b.textContent=label;
+    b.className=(!favOnly&&!recentOnly&&activeCategory===cat)?"on":"";
+    b.onclick=()=>{activeCategory=(activeCategory===cat&&!favOnly&&!recentOnly)?"全部":cat;favOnly=false;recentOnly=false;renderAll();};
+    el.appendChild(b);
+  });
+}
+
+/* ---------- 記住填過的變數 ---------- */
+const VAR_KEY="prompt_vars_v1";
+let varStore={};
+try{varStore=JSON.parse(localStorage.getItem(VAR_KEY)||"{}");}catch(e){}
+function saveVars(){try{localStorage.setItem(VAR_KEY,JSON.stringify(varStore));}catch(e){}}
+const VERSION_KEY="prompt_versions_v1";
+let myVersions=[];
+try{myVersions=JSON.parse(localStorage.getItem(VERSION_KEY)||"[]");}catch(e){}
+function saveVersions(){try{localStorage.setItem(VERSION_KEY,JSON.stringify(myVersions.slice(0,30)));}catch(e){}}
+
+/* ---------- 狀態 ---------- */
+let activeCategory="全部";
+let favOnly=false;
+let recentOnly=false;
+
+/* ---------- 元素 ---------- */
+const $=s=>document.querySelector(s);
+const categoryEl=$("#categories"),cardsEl=$("#cards"),searchEl=$("#search"),searchBtnEl=$("#searchBtn"),
+  levelEl=$("#level"),modelEl=$("#model"),emptyEl=$("#empty"),statsEl=$("#stats"),
+  favToggle=$("#favToggle"),favCountEl=$("#favCount"),recToggle=$("#recToggle"),recCountEl=$("#recCount"),toastEl=$("#toast"),
+  packPanel=$("#packPanel"),versionsPanel=$("#versionsPanel");
+
+function esc(v){return v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function highlight(text,q){
+  let h=esc(text);
+  if(q){const re=new RegExp("("+q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","gi");h=h.replace(re,"<mark>$1</mark>");}
+  return h;
+}
+function colorPh(text){
+  return esc(text).replace(/\[([^\]]+)\]/g,'<span class="ph">[$1]</span>');
+}
+function placeholders(text){
+  const set=[],seen=new Set();
+  (text.match(/\[([^\]]+)\]/g)||[]).forEach(m=>{const k=m.slice(1,-1);if(!seen.has(k)){seen.add(k);set.push(k);}});
+  return set;
+}
+
+const CATEGORY_ORDER=["通用・提示技巧","商業・策略","文字・內容","設計・影音","數據・文書","開發・技術","流程・營運","學習・思考"];
+function catRank(n){const i=CATEGORY_ORDER.indexOf(n);return i<0?999:i;}
+function categories(){
+  const counts={};
+  prompts.forEach(p=>counts[p.category]=(counts[p.category]||0)+1);
+  const list=Object.entries(counts).map(([name,count])=>({name,count}));
+  list.sort((a,b)=>catRank(a.name)-catRank(b.name)||a.name.localeCompare(b.name,"zh-Hant"));
+  return [{name:"全部",count:prompts.length}].concat(list);
+}
+
+function renderPackPanel(){
+  if(!packPanel)return;
+  const packs=(APP_DATA.taskPacks||[]).filter(p=>activeCategory==="全部"||favOnly||recentOnly||p.category===activeCategory);
+  const show=packs.slice(0,activeCategory==="全部"?3:6);
+  if(!show.length){packPanel.innerHTML="";return;}
+  packPanel.innerHTML=`
+    <div class="pack-title">
+      <b>任務包：照順序做，比亂找 prompt 穩</b>
+      <span>資料內嵌在這個 HTML，不靠外部檔案</span>
+    </div>
+    <div class="pack-grid"></div>`;
+  const grid=packPanel.querySelector(".pack-grid");
+  show.forEach(pack=>{
+    const box=document.createElement("article");
+    box.className="pack";
+    box.innerHTML=`<h3>${esc(pack.title)}</h3><p>${esc(pack.desc)}</p><div class="steps"></div>`;
+    const steps=box.querySelector(".steps");
+    pack.steps.forEach((step,idx)=>{
+      const exists=prompts.some(p=>p.id===step.promptId);
+      const row=document.createElement("div");
+      row.className="step";
+      row.innerHTML=`<span class="n">${idx+1}</span><span>${esc(step.label)}</span><button type="button">${exists?"打開":"缺資料"}</button>`;
+      row.querySelector("button").disabled=!exists;
+      row.querySelector("button").onclick=()=>openPrompt(step.promptId,true);
+      steps.appendChild(row);
+    });
+    grid.appendChild(box);
+  });
+}
+
+function renderVersions(){
+  if(!versionsPanel)return;
+  myVersions=myVersions.filter(v=>__ids.has(v.sourceId)||v.sourceId==="custom").slice(0,30);
+  if(!myVersions.length){versionsPanel.innerHTML="";return;}
+  versionsPanel.innerHTML=`
+    <div class="versions-title">
+      <b>我的版本</b>
+      <span>存在這台瀏覽器；HTML 複製到別台仍可開，但個人版本不會跟著走</span>
+    </div>
+    <div class="versions-list"></div>`;
+  const list=versionsPanel.querySelector(".versions-list");
+  myVersions.slice(0,8).forEach((v,idx)=>{
+    const item=document.createElement("div");
+    item.className="version";
+    item.innerHTML=`<span title="${esc(v.name)}">${esc(v.name)}</span><button type="button" data-copyv>複製</button><button type="button" data-delv>刪</button>`;
+    item.querySelector("[data-copyv]").onclick=e=>copy(v.text,e.currentTarget,"已複製我的版本");
+    item.querySelector("[data-delv]").onclick=()=>{myVersions.splice(idx,1);saveVersions();renderVersions();toast("已刪除版本");};
+    list.appendChild(item);
+  });
+}
+
+function openPrompt(id,openFill){
+  const item=prompts.find(p=>p.id===id);
+  if(!item){toast("找不到這個 prompt");return;}
+  searchEl.value="";
+  levelEl.value="all";
+  modelEl.value="all";
+  activeCategory=item.category;
+  favOnly=false;
+  recentOnly=false;
+  renderAll();
+  const art=[...cardsEl.querySelectorAll("article")].find(a=>a.dataset.id===id);
+  if(!art)return;
+  art.classList.add("open","focused");
+  art.scrollIntoView({behavior:"smooth",block:"center"});
+  setTimeout(()=>art.classList.remove("focused"),1800);
+  if(openFill){
+    const btn=art.querySelector("[data-toggle]");
+    const area=art.querySelector("[data-fill]");
+    if(btn&&area&&!area.classList.contains("open"))btn.click();
+  }
+}
+
+function saveMyVersion(item,text){
+  const fallback=item.title+" - 我的版本";
+  const name=(window.prompt("這版叫什麼？",fallback)||"").trim();
+  if(!name)return;
+  myVersions=[{name,sourceId:item.id,text,createdAt:new Date().toISOString()}].concat(myVersions.filter(v=>v.name!==name)).slice(0,30);
+  saveVersions();
+  renderVersions();
+  toast("已儲存我的版本");
+}
+
+function renderCategories(){
+  categoryEl.innerHTML="";
+  categories().forEach(cat=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className=(!favOnly&&!recentOnly&&cat.name===activeCategory)?"active":"";
+    b.innerHTML=`<span>${esc(cat.name)}</span><span class="c">${cat.count}</span>`;
+    b.onclick=()=>{activeCategory=cat.name;favOnly=false;recentOnly=false;renderAll();};
+    categoryEl.appendChild(b);
+  });
+}
+
+function isMatch(item){
+  const q=searchEl.value.trim().toLowerCase();
+  const text=[item.category,item.level,item.title,item.desc,item.prompt].join(" ").toLowerCase();
+  if(favOnly&&!favs.has(item.id))return false;
+  if(recentOnly&&!recent.includes(item.id))return false;
+  if(!favOnly&&!recentOnly&&activeCategory!=="全部"&&item.category!==activeCategory)return false;
+  if(levelEl.value!=="all"&&item.level!==levelEl.value)return false;
+  if(modelEl.value!=="all"&&modelOf(item.category)[0]!==modelEl.value)return false;
+  if(q&&!text.includes(q))return false;
+  return true;
+}
+
+function useCaseOf(item){
+  if(item.title.includes("三語氣"))return "要一次拿多個語氣版本，快速挑方向時";
+  if(item.title.includes("診斷")||item.title.includes("審查"))return "已有草稿或失敗結果，需要找問題時";
+  if(item.prompt.includes("SOP")||item.title.includes("流程"))return "要把人工經驗變成可交接步驟時";
+  if(item.category==="開發・技術")return "要讓 AI 協助程式但不亂改架構時";
+  if(item.category==="設計・影音")return "要先定畫面方向，再丟給生圖或修圖工具時";
+  if(item.category==="數據・文書")return "有資料或文件，想轉成結論與下一步時";
+  return "需求還有點散，需要先變成可執行指令時";
+}
+function outputOf(item){
+  if(item.title.includes("公式"))return "公式、解釋、常見錯誤";
+  if(item.title.includes("SOP"))return "流程、責任、例外與檢查點";
+  if(item.title.includes("Prompt")||item.title.includes("提示"))return "可直接貼給 AI 的完整 prompt";
+  if(item.category==="文字・內容")return "可挑選、可改寫的文案版本";
+  if(item.category==="設計・影音")return "圖片/影片生成方向與修正指令";
+  if(item.category==="商業・策略")return "結論、選項、風險與建議動作";
+  return "整理後的結論與可執行輸出";
+}
+
+function renderCards(){
+  const q=searchEl.value.trim();
+  const visible=prompts.filter(isMatch);
+  if(recentOnly){visible.sort((a,b)=>recent.indexOf(a.id)-recent.indexOf(b.id));}
+  else{const LV={"基礎":0,"進階":1,"專業":2};
+  visible.sort((a,b)=>(catRank(a.category)-catRank(b.category))||((LV[a.level]??9)-(LV[b.level]??9))||a.title.localeCompare(b.title,"zh-Hant"));}
+  const b=prompts.filter(p=>p.level==="基礎").length;
+  const i=prompts.filter(p=>p.level==="進階").length;
+  const pr=prompts.filter(p=>p.level==="專業").length;
+  statsEl.innerHTML=
+    `共 <b>${prompts.length}</b> 筆，顯示 <b>${visible.length}</b> 筆　`+
+    `<span class="lvkey"><span class="dot" style="background:var(--b1)"></span>基礎 ${b}</span>`+
+    `<span class="lvkey"><span class="dot" style="background:var(--b2)"></span>進階 ${i}</span>`+
+    `<span class="lvkey"><span class="dot" style="background:var(--b3)"></span>專業 ${pr}</span>`;
+  cardsEl.innerHTML="";
+  let __lastCat=null;
+  visible.forEach(item=>{
+    if(q&&!recentOnly&&item.category!==__lastCat){__lastCat=item.category;const h=document.createElement("div");h.className="gsec";h.textContent="📂 "+item.category;cardsEl.appendChild(h);}
+    const phs=placeholders(item.prompt);
+    const mo=modelOf(item.category);
+    const art=document.createElement("article");
+    art.dataset.id=item.id;
+    const fillHtml=phs.length?`
+      <div class="fill-area" data-fill>
+        <p class="hint">填入下面欄位 → 按「複製完成版」直接拿到可貼的指令。留空的會保留 [變數]。會記住你填過的值，下次自動帶入（黃底＝上次填的，要改記得改；「貼上」類內容不會被記住）。</p>
+        ${phs.map((p,idx)=>`<div class="fld"><label>${esc(p)}</label><textarea data-ph="${esc(p)}" rows="1" class="${(varStore[p]&&p.indexOf("貼上")<0)?"prefilled":""}" placeholder="填入：${esc(p)}">${esc(p.indexOf("貼上")<0?(varStore[p]||""):"")}</textarea></div>`).join("")}
+        <button class="act" type="button" data-copyfilled>複製完成版</button>
+        <button class="ghost act" type="button" data-saveversion>儲存我的版本</button>
+      </div>`:"";
+    art.innerHTML=`
+      <div class="meta">
+        <span class="tag">${highlight(item.category,q)}</span>
+        <span class="level lv-${item.level}">${item.level}</span>
+        <span class="model m-${mo[0]}" title="${esc(mo[1])}">建議 ${mo[0]}</span>
+        <button class="star ${favs.has(item.id)?'on':''}" type="button" title="收藏" data-star>${favs.has(item.id)?'★':'☆'}</button>
+      </div>
+      <h2 data-open>${highlight(item.title,q)}<span class="chev">▾</span></h2>
+      <p class="desc">${highlight(item.desc,q)}</p>
+      <div class="card-note"><span><b>適合</b> ${esc(useCaseOf(item))}</span></div>
+      <div class="card-note"><span><b>產出</b> ${esc(outputOf(item))}</span></div>
+      <pre class="pbody">${colorPh(item.prompt)}</pre>
+      <div class="actions">
+        <button class="act" type="button" data-copy>複製 prompt</button>
+        ${phs.length?`<button class="ghost act" type="button" data-toggle>填入變數 (${phs.length})</button>`:""}
+        <button class="ghost act" type="button" data-copyframe>複製空白架構</button>
+      </div>
+      ${fillHtml}`;
+
+    if(q)art.classList.add("open");
+    art.querySelector("[data-open]").onclick=()=>art.classList.toggle("open");
+    art.querySelector("[data-star]").onclick=e=>{
+      if(favs.has(item.id)){favs.delete(item.id);}else{favs.add(item.id);}
+      saveFavs();updateFavCount();
+      const s=e.currentTarget;const on=favs.has(item.id);
+      s.classList.toggle("on",on);s.textContent=on?"★":"☆";
+      toast(on?"已加入收藏":"已移除收藏");
+      if(favOnly)renderCards();
+    };
+    art.querySelector("[data-copy]").onclick=e=>{recordUse(item.id);copy(item.prompt,e.currentTarget,"已複製 prompt");};
+    art.querySelector("[data-copyframe]").onclick=e=>copy("角色：\n目標：\n背景：\n素材：\n限制：\n輸出格式：\n請先給結論，再給理由。",e.currentTarget,"已複製空白架構");
+    const tg=art.querySelector("[data-toggle]");
+    if(tg){
+      const area=art.querySelector("[data-fill]");
+      const filledText=()=>{
+        let out=item.prompt;
+        area.querySelectorAll("textarea").forEach(t=>{
+          const v=t.value.trim();
+          if(v)out=out.split("["+t.dataset.ph+"]").join(v);
+        });
+        return out;
+      };
+      tg.onclick=()=>{area.classList.toggle("open");if(area.classList.contains("open")){art.classList.add("open");area.querySelector("textarea").focus();}};
+      const __preview=()=>{
+        const out=filledText();
+        const pe=art.querySelector("pre");if(pe)pe.innerHTML=colorPh(out);
+      };
+      area.querySelectorAll("textarea").forEach(t=>t.addEventListener("input",__preview));
+      art.querySelector("[data-copyfilled]").onclick=e=>{
+        area.querySelectorAll("textarea").forEach(t=>{
+          const v=t.value.trim();
+          if(v&&t.dataset.ph.indexOf("貼上")<0)varStore[t.dataset.ph]=v;
+        });
+        saveVars();
+        recordUse(item.id);
+        copy(filledText(),e.currentTarget,"已複製完成版");
+      };
+      art.querySelector("[data-saveversion]").onclick=()=>saveMyVersion(item,filledText());
+    }
+    cardsEl.appendChild(art);
+  });
+  if(!visible.length){emptyEl.style.display="block";emptyEl.textContent=modelEl.value==="Gemini"?"這些 prompt 都是「貼上就用」的思考／生成型任務，主力是 Claude 或 ChatGPT。Gemini 的強項是串接 Google 全家桶（Gmail、Docs、Sheets、Calendar）做自動化，比較不是貼 prompt 的用法——詳見附的「三大 AI 分工對照表」。":"找不到符合的 prompt。換個分類、難度或關鍵字試試。";}else{emptyEl.style.display="none";}
+}
+
+function updateFavCount(){favCountEl.textContent=favs.size;}
+
+function updateRecCount(){recCountEl.textContent=recent.length;}
+function clearStaticCards(){document.querySelectorAll("[data-static-card]").forEach(el=>el.remove());}
+function renderAll(){
+  clearStaticCards();
+  favToggle.classList.toggle("active",favOnly);
+  recToggle.classList.toggle("active",recentOnly);
+  renderCategories();renderCards();updateFavCount();updateRecCount();renderQuickbar();renderTaskbar();renderPackPanel();renderVersions();
+}
+
+/* ---------- 複製（含 file:// 備援） ---------- */
+async function copy(text,btn,msg){
+  const old=btn.textContent;
+  try{
+    if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);}
+    else{
+      const a=document.createElement("textarea");a.value=text;a.style.position="fixed";a.style.left="-9999px";
+      document.body.appendChild(a);a.focus();a.select();document.execCommand("copy");a.remove();
+    }
+    btn.textContent="已複製 ✓";toast(msg||"已複製");
+  }catch(e){btn.textContent="複製失敗";toast("複製失敗，請手動選取");}
+  setTimeout(()=>btn.textContent=old,1100);
+}
+
+let toastTimer;
+function toast(m){
+  toastEl.textContent=m;toastEl.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove("show"),1400);
+}
+
+/* ---------- 匯出／匯入個人資料（跨電腦搬 localStorage） ---------- */
+function personalData(){
+  return {
+    app:"ai-prompt-tool-pro",
+    version:1,
+    exportedAt:new Date().toISOString(),
+    data:{
+      favs:[...favs],
+      recent,
+      counts,
+      vars:varStore,
+      versions:myVersions,
+      theme:__theme
+    }
+  };
+}
+function exportPersonalData(){
+  const payload=JSON.stringify(personalData(),null,2);
+  showExportPanel(payload);
+  downloadJson(payload);
+}
+function showExportPanel(payload){
+  const panel=document.getElementById("dataPanel");
+  const text=document.getElementById("exportText");
+  text.value=payload;
+  panel.classList.add("show");
+  panel.setAttribute("aria-hidden","false");
+  text.focus();
+  text.select();
+  toast("已產生匯出資料");
+}
+function downloadJson(payload){
+  const blob=new Blob([payload],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const d=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download=`ai-prompt-tool-data-${d}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function cleanIds(arr){
+  return Array.isArray(arr)?arr.filter(id=>typeof id==="string"&&__ids.has(id)):[];
+}
+function importPersonalData(file){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const payload=JSON.parse(reader.result);
+      if(payload.app!=="ai-prompt-tool-pro"||!payload.data)throw new Error("bad file");
+      const d=payload.data;
+      favs=new Set(cleanIds(d.favs));
+      recent=cleanIds(d.recent).slice(0,30);
+      counts=(d.counts&&typeof d.counts==="object")?Object.fromEntries(Object.entries(d.counts).filter(([id,v])=>__ids.has(id)&&Number.isFinite(Number(v))).map(([id,v])=>[id,Number(v)])):{};
+      varStore=(d.vars&&typeof d.vars==="object")?d.vars:{};
+      myVersions=Array.isArray(d.versions)?d.versions.filter(v=>v&&typeof v.name==="string"&&typeof v.text==="string"&&(v.sourceId==="custom"||__ids.has(v.sourceId))).slice(0,30):[];
+      __theme=d.theme==="dark"?"dark":"light";
+      saveFavs();saveVars();saveVersions();
+      try{
+        localStorage.setItem(REC_KEY,JSON.stringify(recent));
+        localStorage.setItem(CNT_KEY,JSON.stringify(counts));
+        localStorage.setItem("pref_theme",__theme);
+      }catch(e){}
+      applyTheme(__theme);
+      renderAll();
+      toast("已匯入個人資料");
+    }catch(e){
+      toast("匯入失敗：檔案格式不對");
+    }
+  };
+  reader.readAsText(file,"utf-8");
+}
+
+/* ---------- 事件 ---------- */
+let __st=null;
+searchEl.addEventListener("input",()=>{clearTimeout(__st);__st=setTimeout(renderCards,150);});
+searchEl.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){e.preventDefault();renderCards();searchEl.blur();}
+});
+searchBtnEl.onclick=()=>{renderCards();searchEl.blur();};
+levelEl.addEventListener("change",renderCards);
+modelEl.addEventListener("change",renderCards);
+document.getElementById("clearAll").onclick=()=>{searchEl.value="";levelEl.value="all";modelEl.value="all";activeCategory="全部";favOnly=false;recentOnly=false;renderAll();toast("已清除全部篩選");};
+const tabPrompts=document.getElementById("tabPrompts"),tabTools=document.getElementById("tabTools"),tabGloss=document.getElementById("tabGloss"),
+  toolsView=document.getElementById("toolsView"),glossView=document.getElementById("glossView"),toolbarEl=document.querySelector(".toolbar"),mainEl=document.querySelector("main");
+const exportDataBtn=document.getElementById("exportData"),importDataBtn=document.getElementById("importData"),importFileEl=document.getElementById("importFile");
+const dataPanel=document.getElementById("dataPanel"),exportTextEl=document.getElementById("exportText"),
+  closeDataPanelBtn=document.getElementById("closeDataPanel"),copyExportTextBtn=document.getElementById("copyExportText"),downloadExportTextBtn=document.getElementById("downloadExportText");
+const glossSearchEl=document.getElementById("glossSearch"),glossCardsEl=document.getElementById("glossCards"),
+  glossStatsEl=document.getElementById("glossStats"),glossEmptyEl=document.getElementById("glossEmpty");
+function renderGloss(){
+  const q=glossSearchEl.value.trim().toLowerCase();
+  const vis=glossary.filter(g=>!q||[g.term,g.full,g.one,g.agent,g.without,g.analogy,g.company,g.mistake,g.enough].join(" ").toLowerCase().includes(q));
+  glossStatsEl.innerHTML=`共 <b>${glossary.length}</b> 個名詞，顯示 <b>${vis.length}</b> 個`;
+  glossCardsEl.innerHTML="";
+  vis.forEach(g=>{
+    const a=document.createElement("article");
+    a.innerHTML=`
+      <div><span class="gloss-term">${highlight(g.term,q)}</span><span class="gloss-full">${highlight(g.full,q)}</span></div>
+      <div class="gloss-one">${highlight(g.one,q)}</div>
+      <div class="facet"><span class="fl">角色</span><span>${highlight(g.agent,q)}</span></div>
+      <div class="facet"><span class="fl">沒有它</span><span>${highlight(g.without,q)}</span></div>
+      <div class="facet"><span class="fl">生活比喻</span><span>${highlight(g.analogy,q)}</span></div>
+      <div class="facet"><span class="fl">公司情境</span><span>${highlight(g.company,q)}</span></div>
+      <div class="facet"><span class="fl">易誤會</span><span>${highlight(g.mistake,q)}</span></div>
+      <div class="facet"><span class="fl">夠用就好</span><span>${highlight(g.enough,q)}</span></div>
+      <div class="actions"><button class="act" type="button" data-copyg>複製整段</button></div>`;
+    a.querySelector("[data-copyg]").onclick=e=>copy(g.term+"（"+g.full+"）\n白話："+g.one+"\n角色："+g.agent+"\n沒有它："+g.without+"\n生活比喻："+g.analogy+"\n公司情境："+g.company+"\n易誤會："+g.mistake+"\n夠用就好："+g.enough,e.currentTarget,"已複製名詞解釋");
+    glossCardsEl.appendChild(a);
+  });
+  glossEmptyEl.style.display=vis.length?"none":"block";
+}
+glossSearchEl.addEventListener("input",renderGloss);
+function showTab(v){
+  const p=v==="prompts",t=v==="tools",g=v==="gloss";
+  toolbarEl.style.display=p?"":"none";
+  mainEl.style.display=p?"":"none";
+  toolsView.style.display=t?"block":"none";
+  glossView.style.display=g?"block":"none";
+  tabPrompts.classList.toggle("active",p);
+  tabTools.classList.toggle("active",t);
+  tabGloss.classList.toggle("active",g);
+  if(g)renderGloss();
+  window.scrollTo(0,0);
+}
+tabPrompts.onclick=()=>showTab("prompts");
+tabTools.onclick=()=>showTab("tools");
+tabGloss.onclick=()=>showTab("gloss");
+exportDataBtn.onclick=exportPersonalData;
+importDataBtn.onclick=()=>importFileEl.click();
+importFileEl.onchange=()=>{const f=importFileEl.files&&importFileEl.files[0];if(f)importPersonalData(f);importFileEl.value="";};
+closeDataPanelBtn.onclick=()=>{dataPanel.classList.remove("show");dataPanel.setAttribute("aria-hidden","true");};
+copyExportTextBtn.onclick=e=>copy(exportTextEl.value,e.currentTarget,"已複製匯出 JSON");
+downloadExportTextBtn.onclick=()=>{downloadJson(exportTextEl.value);toast("已重新下載 JSON");};
+favToggle.onclick=()=>{favOnly=!favOnly;recentOnly=false;activeCategory="全部";renderAll();};
+recToggle.onclick=()=>{recentOnly=!recentOnly;favOnly=false;activeCategory="全部";renderAll();};
+document.addEventListener("keydown",e=>{
+  if(e.key==="/"&&document.activeElement!==searchEl){e.preventDefault();searchEl.focus();}
+  if(e.key==="Escape"&&document.activeElement===searchEl){searchEl.value="";renderCards();searchEl.blur();}
+});
+
+/* ---------- 深淺色切換（預設淺色，記住偏好） ---------- */
+const themeBtn=document.getElementById("themeToggle");
+function applyTheme(t){document.body.classList.toggle("dark",t==="dark");themeBtn.textContent=t==="dark"?"☀️":"🌙";}
+let __theme="light";
+try{__theme=localStorage.getItem("pref_theme")||"light";}catch(e){}
+applyTheme(__theme);
+themeBtn.onclick=()=>{__theme=__theme==="dark"?"light":"dark";try{localStorage.setItem("pref_theme",__theme);}catch(e){}applyTheme(__theme);toast(__theme==="dark"?"已切換深色":"已切換淺色");};
+
+renderAll();
+</script>
+</body>
+</html>
