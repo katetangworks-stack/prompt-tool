@@ -1,0 +1,151 @@
+{
+  "version": "1.4.0",
+  "updatedAt": "2026-06-07",
+  "note": "工具排行不是絕對排名，是依使用流程排序：先生成、再剪輯、再輸出，會隨新工具更新。",
+  "rankings": [
+    {
+      "group": "通用 AI 助理",
+      "note": "不是固定前三名，而是先讓使用者知道各自用途。",
+      "tools": [
+        {
+          "rank": 1,
+          "name": "ChatGPT",
+          "bestFor": "快問快答、圖像生成、資料整理、表格、一般工作助理",
+          "why": "新手最容易直接用。適合先產出初稿，再交給其他工具美化或製作。"
+        },
+        {
+          "rank": 2,
+          "name": "Claude Chat",
+          "bestFor": "長文理解、策略推演、改稿、文件整理",
+          "why": "適合丟長資料、整理脈絡、讓文字更像真人。"
+        },
+        {
+          "rank": 3,
+          "name": "Gemini",
+          "bestFor": "Google 生態、資料查找、文件、表格、YouTube / Workspace",
+          "why": "適合已經大量使用 Google 工具的人。"
+        },
+        {
+          "rank": 4,
+          "name": "Perplexity",
+          "bestFor": "查資料、找來源、比較工具、整理外部資訊",
+          "why": "需要來源或最新資訊時，比單純聊天模型更適合。"
+        },
+        {
+          "rank": 5,
+          "name": "Claude Code",
+          "bestFor": "程式碼、網站、資料檔案、開發工作流",
+          "why": "不是一般聊天工具，是把需求直接改成程式或檔案。"
+        },
+        {
+          "rank": 6,
+          "name": "Claude Cowork",
+          "bestFor": "協作、討論、產品和內容修正",
+          "why": "適合一起拆問題、修產品、改內容方向。"
+        }
+      ]
+    },
+    {
+      "group": "簡報 / 文件產出",
+      "note": "先用 ChatGPT / Claude 整理內容，再交給簡報工具產出版面。",
+      "tools": [
+        {
+          "rank": 1,
+          "name": "Gamma",
+          "bestFor": "快速產出簡報、提案、報告頁面",
+          "why": "適合從大綱快速變成可分享的簡報。"
+        },
+        {
+          "rank": 2,
+          "name": "Canva",
+          "bestFor": "簡報美化、社群圖、活動素材、品牌模板",
+          "why": "適合非設計師快速做出可用版面。"
+        },
+        {
+          "rank": 3,
+          "name": "Beautiful.ai",
+          "bestFor": "商務簡報、模板化但整齊的版面",
+          "why": "適合公司簡報，不想手調版面時用。"
+        },
+        {
+          "rank": 4,
+          "name": "PowerPoint Copilot",
+          "bestFor": "Microsoft 365 公司流程",
+          "why": "適合企業內部文件和簡報流程。"
+        }
+      ]
+    },
+    {
+      "group": "圖像 / 設計",
+      "note": "圖像不是只用一個工具，草稿、風格、排版、修圖常常分開做。",
+      "tools": [
+        {
+          "rank": 1,
+          "name": "ChatGPT Images",
+          "bestFor": "一般商品圖、概念圖、快速修改圖片",
+          "why": "新手最容易上手，適合先做草稿和方向。"
+        },
+        {
+          "rank": 2,
+          "name": "Canva",
+          "bestFor": "社群圖、活動圖、簡報視覺、模板化輸出",
+          "why": "適合把 AI 圖像變成真的能發的版面。"
+        },
+        {
+          "rank": 3,
+          "name": "Midjourney",
+          "bestFor": "高質感風格圖、品牌視覺、情緒氛圍",
+          "why": "視覺質感強，但需要比較會下風格和構圖指令。"
+        },
+        {
+          "rank": 4,
+          "name": "Adobe Firefly / Photoshop",
+          "bestFor": "商用設計、修圖、局部修改、品牌素材",
+          "why": "適合正式設計流程和後製修圖。"
+        },
+        {
+          "rank": 5,
+          "name": "Gemini Images",
+          "bestFor": "Google 圖像生成、商品和生活情境草圖",
+          "why": "適合和 Google 搜尋、文件流程搭配。"
+        }
+      ]
+    },
+    {
+      "group": "影片 / 剪輯 / 聲音",
+      "note": "影片要分清楚：Runway/Kling 是生成影片，Fomofly 是把長影片剪成短影音，ElevenLabs 是聲音。",
+      "tools": [
+        {
+          "rank": 1,
+          "name": "Fomofly",
+          "bestFor": "長影片轉短影音、訪談/課程/Podcast 自動抓亮點",
+          "why": "適合已經有長影片素材，想快速剪成 Reels、TikTok、Shorts；會自動找亮點、重構畫面和加字幕樣式。"
+        },
+        {
+          "rank": 2,
+          "name": "Runway",
+          "bestFor": "從文字或圖片生成影片、鏡頭控制、影像延伸",
+          "why": "適合從零做 AI 影片畫面，或把圖片延伸成有運鏡的片段。"
+        },
+        {
+          "rank": 3,
+          "name": "Kling AI",
+          "bestFor": "商品短片、人物動作、image-to-video",
+          "why": "適合高品質動態、商品展示和圖像轉影片。"
+        },
+        {
+          "rank": 4,
+          "name": "CapCut",
+          "bestFor": "短影音剪輯、字幕、節奏、發布前修整",
+          "why": "AI 生成或 Fomofly 剪完後，最後常需要人工微調字幕、節奏和封面。"
+        },
+        {
+          "rank": 5,
+          "name": "ElevenLabs",
+          "bestFor": "旁白、配音、聲音角色",
+          "why": "商品介紹、公司介紹、教學影片需要男聲/女聲或多語配音時搭配用。"
+        }
+      ]
+    }
+  ]
+}
